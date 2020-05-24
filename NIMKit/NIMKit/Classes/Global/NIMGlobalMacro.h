@@ -14,7 +14,7 @@
 #define NIMKit_IOS11            ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 11.0)
 #define NIMKit_UIScreenWidth   [UIScreen mainScreen].bounds.size.width
 #define NIMKit_UIScreenHeight  [UIScreen mainScreen].bounds.size.height
-
+#define NIMKit_ScaleX  (NIMKit_UIScreenWidth/375.0)
 
 #define NIMKit_SuppressPerformSelectorLeakWarning(Stuff) \
 do { \
