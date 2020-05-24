@@ -6,7 +6,7 @@
 //
 
 #import "WLInputToolBar.h"
-#import <Masonry.h>
+#import <Masonry/Masonry.h>
 #import "NIMGlobalMacro.h"
 
 @interface WLInputToolBar ()
