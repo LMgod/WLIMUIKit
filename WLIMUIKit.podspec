@@ -22,8 +22,9 @@ Pod::Spec.new do |spec|
   spec.libraries  = 'sqlite3.0', 'z', 'c++'
   spec.source       = { :git => "https://github.com/LMgod/WLIMUIKit.git", :tag => spec.version }
   spec.source_files  = 'NIMKit/NIMKit/Classes/**/*.{h,m}'
-  spec.resources = "NIMKit/Resources/*"
-  
+  spec.resource_bundles = {
+      'LMMain' => ['NIMKit/Resources/*']
+  }
   spec.dependency "NIMSDK_LITE", '~> 7.6.0'
   spec.dependency 'SDWebImage', '5.0.6'
   spec.dependency "FLAnimatedImage", "~> 1.0.12"
