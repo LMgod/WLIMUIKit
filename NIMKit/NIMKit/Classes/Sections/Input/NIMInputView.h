@@ -27,11 +27,12 @@ typedef NS_ENUM(NSInteger, NIMAudioRecordPhase) {
 
 typedef NS_ENUM(NSInteger, NIMCustomInputType) {
     NIMCustomInputTypeText       = 1,
-    NIMCustomInputTypeeEmotion   = 2,
+    NIMCustomInputTypeEmotion   = 2,
     NIMCustomInputTypeAudio      = 3,
     NIMCustomInputTypeMedia      = 4,
     NIMCustomInputTypeGift       = 5,
     NIMCustomInputTypeTruth      = 6,
+    NIMCustomInputTypeMore       = 7,
 };
 
 @protocol NIMInputDelegate <NSObject>

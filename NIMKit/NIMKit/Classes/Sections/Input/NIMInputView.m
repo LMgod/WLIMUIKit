@@ -28,7 +28,8 @@
 #import "WLInputSendGiftContainerView.h"
 #import "WLInputSendTruthContainerView.h"
 #import "NIMUIConfig.h"
-@interface NIMInputView()<WLInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate,NIMReplyContentViewDelegate>
+#import <DongtuStoreSDK/DongtuStoreSDK.h>
+@interface NIMInputView()<WLInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate,NIMReplyContentViewDelegate,DongtuStoreDelegate>
 {
     UIView  *_emoticonView;
 }
@@ -57,7 +58,9 @@
         _recordPhase = AudioRecordPhaseEnd;
         _atCache = [[NIMInputAtCache alloc] init];
         _inputConfig = config;
+        self.moreContainerView.config = config;
         self.backgroundColor = [UIColor whiteColor];
+        [self configDongtuTheme];
     }
     return self;
 }
@@ -75,11 +78,12 @@
     CGFloat containerHeight = 0;
     switch (self.type)
     {
-        case NIMCustomInputTypeeEmotion:
+        case NIMCustomInputTypeEmotion:
         case NIMCustomInputTypeAudio:
         case NIMCustomInputTypeMedia:
         case NIMCustomInputTypeGift:
         case NIMCustomInputTypeTruth:
+        case NIMCustomInputTypeMore:
         {
             containerHeight = [NIMUIConfig bottomInputViewHeight];
             break;
@@ -104,6 +108,14 @@
     return CGSizeMake(width, height);
 }
 
+- (void)configDongtuTheme{
+    NSLog(@"[DongtuStoreSDK] version:%@",[DongtuStore sharedInstance].version);
+    [DongtuStore sharedInstance].delegate = self;
+
+    
+    
+}
+
 
 - (void)setInputDelegate:(id<NIMInputDelegate>)delegate
 {
@@ -113,6 +125,7 @@
 - (void)setInputActionDelegate:(id<NIMInputActionDelegate>)actionDelegate
 {
     _actionDelegate = actionDelegate;
+    self.moreContainerView.actionDelegate = actionDelegate;
 }
 
 - (void)reset
@@ -153,6 +166,10 @@
     if (!_toolBar)
     {
         _toolBar = [[WLInputToolBar alloc] initWithFrame:CGRectMake(0, 0, self.nim_width, 0)];
+        __weak typeof(self) weakSelf = self;
+        _toolBar.clickToolBarItemBlock = ^(NSInteger event) {
+            [weakSelf clickToolBarEvent:event];
+        };
     }
     [self addSubview:_toolBar];
    
@@ -181,6 +198,41 @@
     }
     _recording = recording;
 }
+
+- (void)clickToolBarEvent:(NSInteger)event{
+    switch (event) {
+        case 0:
+        {
+            self.type = NIMCustomInputTypeEmotion;
+        }
+            break;
+        case 1:
+        {
+            self.type = NIMCustomInputTypeAudio;
+        }
+            break;
+        case 2:
+        {
+            self.type = NIMCustomInputTypeGift;
+        }
+            break;
+        case 3:
+        {
+            self.type = NIMCustomInputTypeTruth;
+        }
+            break;
+        case 4:
+        {
+            self.type = NIMCustomInputTypeMore;
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+}
+
 
 #pragma mark - 外部接口
 
@@ -225,7 +277,7 @@
 {
     if (_inputDelegate && [_inputDelegate respondsToSelector:@selector(didChangeInputHeight:)])
     {
-        if (self.type == NIMCustomInputTypeeEmotion ||
+        if (self.type == NIMCustomInputTypeEmotion ||
             self.type == NIMCustomInputTypeAudio ||
             self.type == NIMCustomInputTypeMedia ||
             self.type == NIMCustomInputTypeGift ||
@@ -270,38 +322,48 @@
 }
 
 - (void)setType:(NIMCustomInputType)type {
+    if (_type == type) {
+        return;
+    }
     _type = type;
+    [self sizeToFit];
     switch (type) {
-        case NIMCustomInputTypeeEmotion:
+        case NIMCustomInputTypeEmotion:
             {
+                [self.toolBar.inputTextView becomeFirstResponder];
                 self.sendAudioContainerView.hidden = YES;
                 self.sendTruthContainerView.hidden = YES;
                 self.sendGiftContainerView.hidden = YES;
                 self.moreContainerView.hidden = YES;
+                [[DongtuStore sharedInstance] attachEmotionKeyboardToInput:_toolBar.inputTextView.textView];
+               
             }
             break;
         case NIMCustomInputTypeAudio:
         {
-            self.sendAudioContainerView.hidden = YES;
+            self.sendAudioContainerView.hidden = NO;
             self.sendTruthContainerView.hidden = YES;
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = YES;
+            [self bringSubviewToFront:self.sendAudioContainerView];
         }
         break;
         case NIMCustomInputTypeGift:
         {
             self.sendAudioContainerView.hidden = YES;
             self.sendTruthContainerView.hidden = YES;
-            self.sendGiftContainerView.hidden = YES;
+            self.sendGiftContainerView.hidden = NO;
             self.moreContainerView.hidden = YES;
+            [self bringSubviewToFront:self.sendGiftContainerView];
         }
         break;
         case NIMCustomInputTypeTruth:
         {
             self.sendAudioContainerView.hidden = YES;
-            self.sendTruthContainerView.hidden = YES;
+            self.sendTruthContainerView.hidden = NO;
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = YES;
+            [self bringSubviewToFront:self.sendTruthContainerView];
         }
         break;
         case NIMCustomInputTypeText:
@@ -310,6 +372,14 @@
             self.sendTruthContainerView.hidden = YES;
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = YES;
+        }
+        break;
+        case NIMCustomInputTypeMore:
+        {
+            self.sendAudioContainerView.hidden = YES;
+            self.sendTruthContainerView.hidden = YES;
+            self.sendGiftContainerView.hidden = YES;
+            self.moreContainerView.hidden = NO;
         }
         break;
         default:
@@ -686,6 +756,28 @@
     }
 }
 
+#pragma mark - <DongtuStoreDelegate>😄
+- (void)didSelectGif:(nonnull DTGif *)gif{
+    if ([self.actionDelegate respondsToSelector:@selector(didSelectGif:)]) {
+        [self.actionDelegate didSendGif:gif];
+    }
+}
+- (void)didSelectEmoji:(nonnull DTEmoji *)emoji{
+    if ([self.actionDelegate respondsToSelector:@selector(didSendEmoji:)]) {
+        [self.actionDelegate didSendEmoji:emoji];
+    }
+}
+
+- (void)didSendWithInput:(nonnull UIResponder<UITextInput> *)input{
+    if ([self.actionDelegate respondsToSelector:@selector(didSendWithInput:)]) {
+        [self.actionDelegate didSendWithInput:input];
+    }
+}
+
+- (void)tapOverlay{
+    
+    
+}
 #pragma mark - setter、getter
 - (WLInputSendAudioContainerView *)sendAudioContainerView {
     if (!_sendAudioContainerView) {
@@ -719,9 +811,13 @@
 
 - (NIMInputMoreContainerView *)moreContainerView {
     if (!_moreContainerView) {
-        _moreContainerView = [[NIMInputMoreContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
+        _moreContainerView = [[NIMInputMoreContainerView alloc] initWithFrame:CGRectZero];
+        _moreContainerView.nim_size = [_moreContainerView sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
+        _moreContainerView.nim_top = [NIMUIConfig topInputViewHeight];
         _moreContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         _moreContainerView.hidden = YES;
+        
+        
         [self addSubview:_moreContainerView];
     }
     return _moreContainerView;

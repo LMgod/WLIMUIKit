@@ -62,7 +62,9 @@
 
 - (void)itemClick:(UIButton *)sender{
     NSInteger index = sender.tag - 1200;
-    
+    if (self.clickToolBarItemBlock) {
+        self.clickToolBarItemBlock(index);
+    }
     
 }
 

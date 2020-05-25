@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 @class NIMMediaItem;
-
-
+@class DTGif;
+@class DTEmoji;
 @protocol NIMInputActionDelegate <NSObject>
 
 @optional
@@ -38,7 +38,10 @@
 - (void)onTapVoiceBtn:(id)sender;
 
 - (void)didReplyCancelled;
-
+//动图
+- (void)didSendGif:(nonnull DTGif *)gif;
+- (void)didSendEmoji:(nonnull DTEmoji *)emoji;
+- (void)didSendWithInput:(nonnull UIResponder<UITextInput> *)input;
 
 @end
 

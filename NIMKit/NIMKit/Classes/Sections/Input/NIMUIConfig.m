@@ -21,7 +21,8 @@
 
 + (CGFloat)bottomInputViewHeight
 {
-    return 245 * NIMKit_ScaleX;
+    return 216.0;
+    //return 245 * NIMKit_ScaleX;
 }
 
 + (NSInteger)messageLimit

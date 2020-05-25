@@ -24,19 +24,12 @@
 #import "NIMReplyContentView.h"
 #import "NIMKitDependency.h"
 #import "NIMKitQuickCommentUtil.h"
-
+#import "WLMessageSessionConfig.h"
 @interface NIMSessionViewController ()<NIMMediaManagerDelegate,NIMInputDelegate>
 
 @property (nonatomic,readwrite) NIMMessage *messageForMenu;
-
-@property (nonatomic,strong)    UILabel *titleLabel;
-
-@property (nonatomic,strong)    UILabel *subTitleLabel;
-
 @property (nonatomic,strong)    NSIndexPath *lastVisibleIndexPathBeforeRotation;
-
 @property (nonatomic,strong)    NIMSessionConfigurator *configurator;
-
 @property (nonatomic,strong)    UITapGestureRecognizer *tableViewTapGesture;
 
 @end
@@ -61,8 +54,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    //导航栏
-    [self setupNav];
+    self.navigationItem.title = [self sessionTitle];
     //消息 tableView
     [self setupTableView];
     //输入框 inputView
@@ -75,17 +67,7 @@
     [self uiCheckReceipts:nil];
 }
 
-- (void)setupNav
-{
-    [self setUpTitleView];
-    NIMCustomLeftBarView *leftBarView = [[NIMCustomLeftBarView alloc] init];
-    UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithCustomView:leftBarView];
-    if (@available(iOS 11.0, *)) {
-        leftBarView.translatesAutoresizingMaskIntoConstraints = NO;
-    }
-    self.navigationItem.leftBarButtonItems = @[leftItem];
-    self.navigationItem.leftItemsSupplementBackButton = YES;
-}
+
 
 - (void)setupTableView
 {
@@ -102,7 +84,6 @@
     [self.tableViewTapGesture addTarget:self action:@selector(onTapTableView:)];
     [self.tableView addGestureRecognizer:self.tableViewTapGesture];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
-    
     if ([self.sessionConfig respondsToSelector:@selector(sessionBackgroundImage)] && [self.sessionConfig sessionBackgroundImage]) {
         UIImageView *imgView = [[UIImageView alloc] initWithFrame:self.view.bounds];
         imgView.image = [self.sessionConfig sessionBackgroundImage];
@@ -159,7 +140,6 @@
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    [self changeLeftBarBadge:self.conversationManager.allUnreadCount];
     [self.interactor resetLayout];
 }
 
@@ -200,8 +180,6 @@
 
 - (void)didRefreshMessageData
 {
-    [self refreshSessionTitle:self.sessionTitle];
-    [self refreshSessionSubTitle:self.sessionSubTitle];
     [self.tableView reloadData];
 }
 
@@ -231,9 +209,6 @@
     }
     return title;
 }
-
-- (NSString *)sessionSubTitle{return @"";};
-
 #pragma mark - 状态操作
 - (NIMKitSessionState)sessionState {
     return [self.interactor sessionState];
@@ -373,7 +348,6 @@
     if ([recentSession.session isEqual:self.session]) {
         return;
     }
-    [self changeLeftBarBadge:totalUnreadCount];
 }
 
 #pragma mark - NIMMediaManagerDelegate
@@ -410,6 +384,8 @@
     [[NIMSDK sharedSDK].mediaManager cancelRecord];
 }
 
+
+
 #pragma mark - 录音相关接口
 - (void)onRecordFailed:(NSError *)error{}
 
@@ -427,7 +403,7 @@
     [self.interactor changeLayout:inputHeight];
 }
 
-#pragma mark - NIMInputActionDelegate
+#pragma mark - <NIMInputActionDelegate>
 - (BOOL)onTapMediaItem:(NIMMediaItem *)item{
     SEL sel = item.selctor;
     BOOL handled = sel && [self respondsToSelector:sel];
@@ -439,77 +415,10 @@
 }
 
 - (void)onTextChanged:(id)sender{}
-
+//发送文字消息
 - (void)onSendText:(NSString *)text atUsers:(NSArray *)atUsers
 {
-    NSMutableArray *users = [NSMutableArray arrayWithArray:atUsers];
-    if (self.session.sessionType == NIMSessionTypeP2P)
-    {
-        [users addObject:self.session.sessionId];
-    }
-
-    NIMMessage *message = [NIMMessageMaker msgWithText:text];
-    if (atUsers.count)
-    {
-        NIMMessageApnsMemberOption *apnsOption = [[NIMMessageApnsMemberOption alloc] init];
-        apnsOption.userIds = atUsers;
-        apnsOption.forcePush = YES;
-        
-        NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
-        option.session = self.session;
-        
-        NSString *me = [[NIMKit sharedKit].provider infoByUser:[NIMSDK sharedSDK].loginManager.currentAccount option:option].showName;
-        apnsOption.apnsContent = [NSString stringWithFormat:@"%@在群里@了你".nim_localized, me];
-        message.apnsMemberOption = apnsOption;
-    }
     
-    [self sendMessage:message];
-}
-
-- (void)onSelectEmoticon:(NIMInputEmoticon *)emoticon
-{
-    NSString *emoticonID = emoticon.emoticonID;
-    NSArray *array = [emoticonID componentsSeparatedByString:@"_"];
-    NSString *numberStr = [array lastObject];
-    NSInteger number = [numberStr integerValue];
-    __block NIMQuickComment *newComment = [NIMCommentMaker commentWithType:number content:emoticon.tag ext:@"扩展"];
-    [self hadCommentThisMessage:self.messageForMenu type:number
-                      compltion:^(NSMapTable *result)
-     {
-        NIMQuickComment *oldComment = [NIMKitQuickCommentUtil myCommentFromComments:0 keys:@[@(number)] comments:result];
-        BOOL contains = oldComment ? YES : NO;
-        if (!contains)
-        {
-            [self.interactor addQuickComment:newComment
-                                  completion:^(NSError *error)
-            {
-//                [self.view hideToasts];
-                if (error)
-                {
-                    [self.view makeToast:@"操作失败".nim_localized duration:2 position:CSToastPositionCenter];
-                }
-                
-                [self cleanMenuMessage];
-                [self.advanceMenu dismiss];
-            }];
-        }
-        else
-        {
-            [self.interactor delQuickComment:oldComment
-                               targetMessage:self.messageForMenu
-                                  completion:^(NSError *error)
-            {
-//                [self.view hideToasts];
-                if (error)
-                {
-                    [self.view makeToast:@"操作失败".nim_localized duration:2 position:CSToastPositionCenter];
-                }
-
-                [self cleanMenuMessage];
-                [self.advanceMenu dismiss];
-            }];
-        }
-    }];
 }
 
 - (void)didReplyCancelled
@@ -552,6 +461,20 @@
     [[NIMSDK sharedSDK].mediaManager record:type
                                    duration:duration];
 }
+
+//动图
+- (void)didSendGif:(nonnull DTGif *)gif{
+    
+}
+- (void)didSendEmoji:(nonnull DTEmoji *)emoji{
+    
+}
+- (void)didSendWithInput:(nonnull UIResponder<UITextInput> *)input{
+    
+    
+}
+
+
 
 #pragma mark NIMChatExtendManagerDelegate
 
@@ -670,7 +593,7 @@
 #pragma mark - 配置项
 - (id<NIMSessionConfig>)sessionConfig
 {
-    return nil; //使用默认配置
+    return [[WLMessageSessionConfig alloc] init];
 }
 
 #pragma mark - 配置项列表
@@ -818,6 +741,7 @@
 }
 
 #pragma mark - NIMMeidaButton
+
 - (void)onTapMediaItemPicture:(NIMMediaItem *)item
 {
     [self.interactor mediaPicturePressed];
@@ -883,12 +807,7 @@
 
 }
 
-- (void)changeLeftBarBadge:(NSInteger)unreadCount
-{
-    NIMCustomLeftBarView *leftBarView = (NIMCustomLeftBarView *)self.navigationItem.leftBarButtonItem.customView;
-    leftBarView.badgeView.badgeValue = @(unreadCount).stringValue;
-    leftBarView.badgeView.hidden = !unreadCount;
-}
+
 
 
 - (id<NIMConversationManager>)conversationManager{
@@ -905,36 +824,7 @@
 }
 
 
-- (void)setUpTitleView
-{
-    NIMKitTitleView *titleView = (NIMKitTitleView *)self.navigationItem.titleView;
-    if (!titleView || ![titleView isKindOfClass:[NIMKitTitleView class]])
-    {
-        titleView = [[NIMKitTitleView alloc] initWithFrame:CGRectZero];
-        self.navigationItem.titleView = titleView;
-        
-        titleView.titleLabel.text = self.sessionTitle;
-        titleView.subtitleLabel.text = self.sessionSubTitle;
-        
-        self.titleLabel    = titleView.titleLabel;
-        self.subTitleLabel = titleView.subtitleLabel;
-    }
 
-    [titleView sizeToFit];
-}
-
-- (void)refreshSessionTitle:(NSString *)title
-{
-    self.titleLabel.text = title;
-    [self setUpTitleView];
-}
-
-
-- (void)refreshSessionSubTitle:(NSString *)title
-{
-    self.subTitleLabel.text = title;
-    [self setUpTitleView];
-}
 
 - (void)refreshMessages
 {

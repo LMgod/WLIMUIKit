@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NIMGrowingTextView *inputTextView;
 @property (nonatomic, weak) id<WLInputToolBarDelegate>delegate;
+@property (nonatomic, copy) void(^clickToolBarItemBlock)(NSInteger event);
 
 @property (nonatomic,assign) BOOL showsKeyboard;
 @property (nonatomic,copy) NSString *contentText;

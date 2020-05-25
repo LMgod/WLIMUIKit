@@ -11,7 +11,7 @@
 
 @interface NIMGrowingTextView()<UITextViewDelegate>
 
-@property (nonatomic,strong) NIMGrowingInternalTextView *textView;
+
 
 @property (nonatomic,assign) CGFloat maxHeight;
 

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @class NIMGrowingTextView;
-
+@class NIMGrowingInternalTextView;
 @protocol NIMGrowingTextViewDelegate <NSObject>
 @optional
 
@@ -46,6 +46,8 @@
 @property (nonatomic,assign) NSInteger maxNumberOfLines;
 
 @property (nonatomic,strong) UIView *inputView;
+
+@property (nonatomic,strong) NIMGrowingInternalTextView *textView;
 
 @end
 
