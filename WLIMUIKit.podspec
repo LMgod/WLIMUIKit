@@ -32,6 +32,6 @@ Pod::Spec.new do |spec|
   spec.dependency "M80AttributedLabel", "~> 1.9.9"
   spec.dependency "YYImage", "~>  1.0.4"
   spec.dependency "YYImage/WebP", "~>  1.0.4"
-  spec.dependency "Masonry", "~>  1.1.0"
-
+  spec.dependency "YYImage/WebP", "~>  1.0.4"
+  spec.dependency "DongtuStore", "~>  3.2.6"
 end

@@ -24,29 +24,29 @@
 #import "NSString+NIMKit.h"
 #import "NIMReplyContentView.h"
 #import "M80AttributedLabel+NIMKit.h"
-
-
-@interface NIMInputView()<NIMInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate,NIMReplyContentViewDelegate>
+#import "WLInputSendAudioContainerView.h"
+#import "WLInputSendGiftContainerView.h"
+#import "WLInputSendTruthContainerView.h"
+#import "NIMUIConfig.h"
+@interface NIMInputView()<WLInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate,NIMReplyContentViewDelegate>
 {
     UIView  *_emoticonView;
 }
-
-@property (nonatomic, strong) NIMInputAudioRecordIndicatorView *audioRecordIndicator;
 @property (nonatomic, assign) NIMAudioRecordPhase recordPhase;
 @property (nonatomic, weak) id<NIMSessionConfig> inputConfig;
 @property (nonatomic, weak) id<NIMInputDelegate> inputDelegate;
 @property (nonatomic, weak) id<NIMInputActionDelegate> actionDelegate;
 
 @property (nonatomic, assign) CGFloat keyBoardFrameTop; //键盘的frame的top值，屏幕高度 - 键盘高度，由于有旋转的可能，这个值只有当 键盘弹出时才有意义。
+@property (nonatomic, strong) NIMInputMoreContainerView *moreContainerView;
+@property (nonatomic, strong) WLInputSendAudioContainerView *sendAudioContainerView;
+@property (nonatomic, strong) WLInputSendGiftContainerView *sendGiftContainerView;
+@property (nonatomic, strong) WLInputSendTruthContainerView *sendTruthContainerView;
 
 @end
 
 
 @implementation NIMInputView
-
-@synthesize emoticonContainer = _emoticonContainer;
-@synthesize moreContainer = _moreContainer;
-
 - (instancetype)initWithFrame:(CGRect)frame
                        config:(id<NIMSessionConfig>)config
 {
@@ -73,16 +73,15 @@
     CGFloat replyedContentHeight = _replyedContent.hidden ? 0 : _replyedContent.nim_height;
     CGFloat toolBarHeight = _toolBar.nim_height;
     CGFloat containerHeight = 0;
-    switch (self.status)
+    switch (self.type)
     {
-        case NIMInputStatusEmoticon:
+        case NIMCustomInputTypeeEmotion:
+        case NIMCustomInputTypeAudio:
+        case NIMCustomInputTypeMedia:
+        case NIMCustomInputTypeGift:
+        case NIMCustomInputTypeTruth:
         {
-            containerHeight = _emoticonContainer.nim_height;
-            break;
-        }
-        case NIMInputStatusMore:
-        {
-            containerHeight = _moreContainer.nim_height;
+            containerHeight = [NIMUIConfig bottomInputViewHeight];
             break;
         }
         default:
@@ -119,31 +118,15 @@
 - (void)reset
 {
     self.nim_width = self.superview.nim_width;
-    [self refreshStatus:NIMInputStatusText];
+    self.type = NIMCustomInputTypeText;
     [self sizeToFit];
 }
 
-- (void)refreshStatus:(NIMInputStatus)status
-{
-    self.status = status;
-    [self.toolBar update:status];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.moreContainer.hidden = status != NIMInputStatusMore;
-        self.emoticonContainer.hidden = status != NIMInputStatusEmoticon;
-    });
-}
 
-- (NIMInputAudioRecordIndicatorView *)audioRecordIndicator {
-    if(!_audioRecordIndicator) {
-        _audioRecordIndicator = [[NIMInputAudioRecordIndicatorView alloc] init];
-    }
-    return _audioRecordIndicator;
-}
 
 - (void)setRecordPhase:(NIMAudioRecordPhase)recordPhase {
     NIMAudioRecordPhase prevPhase = _recordPhase;
     _recordPhase = recordPhase;
-    self.audioRecordIndicator.phase = _recordPhase;
     if(prevPhase == AudioRecordPhaseEnd) {
         if(AudioRecordPhaseStart == _recordPhase) {
             if ([_actionDelegate respondsToSelector:@selector(onStartRecording)]) {
@@ -169,90 +152,19 @@
 {
     if (!_toolBar)
     {
-        _toolBar = [[NIMInputToolBar alloc] initWithFrame:CGRectMake(0, 0, self.nim_width, 0)];
+        _toolBar = [[WLInputToolBar alloc] initWithFrame:CGRectMake(0, 0, self.nim_width, 0)];
     }
     [self addSubview:_toolBar];
-    //设置placeholder
-    NSString *placeholder = [NIMKit sharedKit].config.placeholder;
-    [_toolBar setPlaceHolder:placeholder];
-    
-    //设置input bar 上的按钮
-    if ([_inputConfig respondsToSelector:@selector(inputBarItemTypes)]) {
-        NSArray *types = [_inputConfig inputBarItemTypes];
-        [_toolBar setInputBarItemTypes:types];
-    }
-    
+   
+
     _toolBar.delegate = self;
-    [_toolBar.emoticonBtn addTarget:self action:@selector(onTouchEmoticonBtn:) forControlEvents:UIControlEventTouchUpInside];
-    [_toolBar.moreMediaBtn addTarget:self action:@selector(onTouchMoreBtn:) forControlEvents:UIControlEventTouchUpInside];
-    [_toolBar.voiceButton addTarget:self action:@selector(onTouchVoiceBtn:) forControlEvents:UIControlEventTouchUpInside];
-    [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDown:) forControlEvents:UIControlEventTouchDown];
-    [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDragInside:) forControlEvents:UIControlEventTouchDragInside];
-    [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
-    [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnUpInside:) forControlEvents:UIControlEventTouchUpInside];
-    [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
     _toolBar.nim_size = [_toolBar sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
     _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [_toolBar.recordButton setTitle:@"按住说话".nim_localized forState:UIControlStateNormal];
-    [_toolBar.recordButton setHidden:YES];
-    
+
     //设置最大输入字数
     NSInteger textInputLength = [NIMKit sharedKit].config.inputMaxLength;
     self.maxTextLength = textInputLength;
-    
-    [self refreshStatus:NIMInputStatusText];
-    [self sizeToFit];
-}
-
-- (void)checkMoreContainer
-{
-    if (!_moreContainer) {
-        NIMInputMoreContainerView *moreContainer = [[NIMInputMoreContainerView alloc] initWithFrame:CGRectZero];
-        moreContainer.nim_size = [moreContainer sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
-        moreContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        moreContainer.hidden   = YES;
-        moreContainer.config   = _inputConfig;
-        moreContainer.actionDelegate = self.actionDelegate;
-        _moreContainer = moreContainer;
-    }
-    
-    //可能是外部主动设置进来的，统一放在这里添加 subview
-    if (!_moreContainer.superview)
-    {
-        [self addSubview:_moreContainer];
-    }
-}
-
-- (void)setMoreContainer:(UIView *)moreContainer
-{
-    _moreContainer = moreContainer;
-    [self sizeToFit];
-}
-
-- (void)checkEmoticonContainer
-{
-    if (!_emoticonContainer) {
-        NIMInputEmoticonContainerView *emoticonContainer = [[NIMInputEmoticonContainerView alloc] initWithFrame:CGRectZero];
-        
-        emoticonContainer.nim_size = [emoticonContainer sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
-        emoticonContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        emoticonContainer.delegate = self;
-        emoticonContainer.hidden = YES;
-        emoticonContainer.config = _inputConfig;
-        
-        _emoticonContainer = emoticonContainer;
-    }
-    
-    //可能是外部主动设置进来的，统一放在这里添加 subview
-    if (!_emoticonContainer.superview)
-    {
-        [self addSubview:_emoticonContainer];
-    }
-}
-
-- (void)setEmoticonContainer:(UIView *)emoticonContainer
-{
-    _emoticonContainer = emoticonContainer;
+    self.type = NIMCustomInputTypeText;
     [self sizeToFit];
 }
 
@@ -260,26 +172,21 @@
 {
     if(recording)
     {
-        self.audioRecordIndicator.center = self.superview.center;
-        [self.superview addSubview:self.audioRecordIndicator];
+       
         self.recordPhase = AudioRecordPhaseRecording;
     }
     else
     {
-        [self.audioRecordIndicator removeFromSuperview];
         self.recordPhase = AudioRecordPhaseEnd;
     }
     _recording = recording;
 }
 
 #pragma mark - 外部接口
-- (void)setInputTextPlaceHolder:(NSString*)placeHolder
-{
-    [_toolBar setPlaceHolder:placeHolder];
-}
+
 
 - (void)updateAudioRecordTime:(NSTimeInterval)time {
-    self.audioRecordIndicator.recordTime = time;
+    
 }
 
 - (void)updateVoicePower:(float)power {
@@ -318,7 +225,11 @@
 {
     if (_inputDelegate && [_inputDelegate respondsToSelector:@selector(didChangeInputHeight:)])
     {
-        if (self.status == NIMInputStatusMore || self.status == NIMInputStatusEmoticon || self.status == NIMInputStatusAudio)
+        if (self.type == NIMCustomInputTypeeEmotion ||
+            self.type == NIMCustomInputTypeAudio ||
+            self.type == NIMCustomInputTypeMedia ||
+            self.type == NIMCustomInputTypeGift ||
+            self.type == NIMCustomInputTypeTruth)
         {
             //这个时候需要一个动画来模拟键盘
             [UIView animateWithDuration:0.25 delay:0 options:7 animations:^{
@@ -344,8 +255,6 @@
     {
         self.toolBar.nim_top = 0.f;
     }
-    _moreContainer.nim_top     = self.toolBar.nim_bottom;
-    _emoticonContainer.nim_top = self.toolBar.nim_bottom;
 }
 
 - (NIMReplyContentView *)replyedContent
@@ -360,64 +269,57 @@
     return _replyedContent;
 }
 
-- (void)setStatus:(NIMInputStatus)status
-{
-    if (_status != status)
-    {
-        _status = status;
-        switch (_status) {
-            case NIMInputStatusEmoticon:
-                [self checkEmoticonContainer];
-                break;
-            case NIMInputStatusMore:
-                [self checkMoreContainer];
-            default:
-                break;
+- (void)setType:(NIMCustomInputType)type {
+    _type = type;
+    switch (type) {
+        case NIMCustomInputTypeeEmotion:
+            {
+                self.sendAudioContainerView.hidden = YES;
+                self.sendTruthContainerView.hidden = YES;
+                self.sendGiftContainerView.hidden = YES;
+                self.moreContainerView.hidden = YES;
+            }
+            break;
+        case NIMCustomInputTypeAudio:
+        {
+            self.sendAudioContainerView.hidden = YES;
+            self.sendTruthContainerView.hidden = YES;
+            self.sendGiftContainerView.hidden = YES;
+            self.moreContainerView.hidden = YES;
         }
+        break;
+        case NIMCustomInputTypeGift:
+        {
+            self.sendAudioContainerView.hidden = YES;
+            self.sendTruthContainerView.hidden = YES;
+            self.sendGiftContainerView.hidden = YES;
+            self.moreContainerView.hidden = YES;
+        }
+        break;
+        case NIMCustomInputTypeTruth:
+        {
+            self.sendAudioContainerView.hidden = YES;
+            self.sendTruthContainerView.hidden = YES;
+            self.sendGiftContainerView.hidden = YES;
+            self.moreContainerView.hidden = YES;
+        }
+        break;
+        case NIMCustomInputTypeText:
+        {
+            self.sendAudioContainerView.hidden = YES;
+            self.sendTruthContainerView.hidden = YES;
+            self.sendGiftContainerView.hidden = YES;
+            self.moreContainerView.hidden = YES;
+        }
+        break;
+        default:
+            break;
     }
 }
 
-
 #pragma mark - button actions
 - (void)onTouchVoiceBtn:(id)sender {
-    // image change
-    if (self.status!= NIMInputStatusAudio) {
-        if ([self.actionDelegate respondsToSelector:@selector(onTapVoiceBtn:)]) {
-            [self.actionDelegate onTapVoiceBtn:sender];
-        }
-        __weak typeof(self) weakSelf = self;
-        if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(requestRecordPermission:)]) {
-            [[AVAudioSession sharedInstance] performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
-                if (granted) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [weakSelf refreshStatus:NIMInputStatusAudio];
-                        if (weakSelf.toolBar.showsKeyboard)
-                        {
-                            weakSelf.toolBar.showsKeyboard = NO;
-                        }
-                        [self sizeToFit];
-                    });
-                }
-                else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[[UIAlertView alloc] initWithTitle:nil
-                                                    message:@"没有麦克风权限".nim_localized
-                                                   delegate:nil
-                                          cancelButtonTitle:@"确定".nim_localized
-                                          otherButtonTitles:nil] show];
-                    });
-                }
-            }];
-        }
-    }
-    else
-    {
-        if ([self.toolBar.inputBarItemTypes containsObject:@(NIMInputBarItemTypeTextAndRecord)])
-        {
-            [self refreshStatus:NIMInputStatusText];
-            self.toolBar.showsKeyboard = YES;
-        }
-    }
+    
 }
 
 - (IBAction)onTouchRecordBtnDown:(id)sender {
@@ -444,53 +346,11 @@
 
 - (void)onTouchEmoticonBtn:(id)sender
 {
-    if (self.status != NIMInputStatusEmoticon) {
-        if ([self.actionDelegate respondsToSelector:@selector(onTapEmoticonBtn:)]) {
-            [self.actionDelegate onTapEmoticonBtn:sender];
-        }
-        [self checkEmoticonContainer];
-        [self bringSubviewToFront:self.emoticonContainer];
-        [self.emoticonContainer setHidden:NO];
-        [self.moreContainer setHidden:YES];
-        [self refreshStatus:NIMInputStatusEmoticon];
-        [self sizeToFit];
-        
-        
-        if (self.toolBar.showsKeyboard)
-        {
-            self.toolBar.showsKeyboard = NO;
-        }
-    }
-    else
-    {
-        [self refreshStatus:NIMInputStatusText];
-        self.toolBar.showsKeyboard = YES;
-    }
+    
 }
 
 - (void)onTouchMoreBtn:(id)sender {
-    if (self.status != NIMInputStatusMore)
-    {
-        if ([self.actionDelegate respondsToSelector:@selector(onTapMoreBtn:)]) {
-            [self.actionDelegate onTapMoreBtn:sender];
-        }
-        [self checkMoreContainer];
-        [self bringSubviewToFront:self.moreContainer];
-        [self.moreContainer setHidden:NO];
-        [self.emoticonContainer setHidden:YES];
-        [self refreshStatus:NIMInputStatusMore];
-        [self sizeToFit];
-
-        if (self.toolBar.showsKeyboard)
-        {
-            self.toolBar.showsKeyboard = NO;
-        }
-    }
-    else
-    {
-        [self refreshStatus:NIMInputStatusText];
-        self.toolBar.showsKeyboard = YES;
-    }
+    
 }
 
 - (BOOL)endEditing:(BOOL)force
@@ -499,7 +359,7 @@
     if (!self.toolBar.showsKeyboard) {
         UIViewAnimationCurve curve = UIViewAnimationCurveEaseInOut;
         void(^animations)(void) = ^{
-            [self refreshStatus:NIMInputStatusText];
+            self.type = NIMCustomInputTypeText;
             [self sizeToFit];
             if (self.inputDelegate && [self.inputDelegate respondsToSelector:@selector(didChangeInputHeight:)]) {
                 [self.inputDelegate didChangeInputHeight:self.nim_height];
@@ -516,7 +376,7 @@
 
 - (BOOL)textViewShouldBeginEditing
 {
-    [self refreshStatus:NIMInputStatusText];
+    self.type = NIMCustomInputTypeText;
     return YES;
 }
 
@@ -825,5 +685,48 @@
         [self.actionDelegate didReplyCancelled];
     }
 }
+
+#pragma mark - setter、getter
+- (WLInputSendAudioContainerView *)sendAudioContainerView {
+    if (!_sendAudioContainerView) {
+        _sendAudioContainerView = [[WLInputSendAudioContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
+        _sendAudioContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        _sendAudioContainerView.hidden = YES;
+        [self addSubview:_sendAudioContainerView];
+    }
+    return _sendAudioContainerView;
+}
+
+- (WLInputSendGiftContainerView *)sendGiftContainerView {
+    if (!_sendGiftContainerView) {
+        _sendGiftContainerView = [[WLInputSendGiftContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
+        _sendGiftContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        _sendGiftContainerView.hidden = YES;
+        [self addSubview:_sendGiftContainerView];
+    }
+    return _sendGiftContainerView;
+}
+
+- (WLInputSendTruthContainerView *)sendTruthContainerView {
+    if (!_sendTruthContainerView) {
+        _sendTruthContainerView = [[WLInputSendTruthContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
+        _sendTruthContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        _sendTruthContainerView.hidden = YES;
+        [self addSubview:_sendTruthContainerView];
+    }
+    return _sendTruthContainerView;
+}
+
+- (NIMInputMoreContainerView *)moreContainerView {
+    if (!_moreContainerView) {
+        _moreContainerView = [[NIMInputMoreContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
+        _moreContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        _moreContainerView.hidden = YES;
+        [self addSubview:_moreContainerView];
+    }
+    return _moreContainerView;
+}
+
+
 
 @end

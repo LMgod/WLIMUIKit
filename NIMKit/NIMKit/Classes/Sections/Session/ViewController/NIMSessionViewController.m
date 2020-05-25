@@ -122,7 +122,6 @@
         [self.sessionInputView setSession:self.session];
         [self.sessionInputView setInputDelegate:self];
         [self.sessionInputView setInputActionDelegate:self];
-        [self.sessionInputView refreshStatus:NIMInputStatusText];
         [self.view addSubview:_sessionInputView];
     }
 }
