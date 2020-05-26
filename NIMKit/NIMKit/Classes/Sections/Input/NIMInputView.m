@@ -133,6 +133,10 @@
     self.nim_width = self.superview.nim_width;
     [self endEditing:YES];
     [self sizeToFit];
+    self.sendAudioContainerView.hidden = YES;
+    self.sendTruthContainerView.hidden = YES;
+    self.sendGiftContainerView.hidden = YES;
+    self.moreContainerView.hidden = YES;
 }
 
 
