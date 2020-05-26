@@ -9,6 +9,7 @@
 #import "NIMGlobalMacro.h"
 #import "UIView+NIM.h"
 #import "NIMUIConfig.h"
+#import "NIMUITextHelper.h"
 @interface WLInputToolBar ()<NIMGrowingTextViewDelegate>
 
 @property (nonatomic, strong) UIView *btnContentView;
@@ -195,7 +196,7 @@
         _inputTextView.font = [UIFont systemFontOfSize:14.0f];
         _inputTextView.maxNumberOfLines = 4;
         _inputTextView.minNumberOfLines = 1;
-        _inputTextView.placeholderAttributedText = [[NSAttributedString alloc] initWithString:@"想和Ta说点什么？".nim_localized attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14],NSForegroundColorAttributeName : UIColor.lightGrayColor}];
+        _inputTextView.placeholderAttributedText = [[NSAttributedString alloc] initWithString:[NIMUITextHelper UITextPlaceHolderIMInput] attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14],NSForegroundColorAttributeName : UIColor.lightGrayColor}];
         _inputTextView.textColor = [UIColor blackColor];
         _inputTextView.backgroundColor = [UIColor clearColor];
         _inputTextView.nim_size = [_inputTextView intrinsicContentSize];

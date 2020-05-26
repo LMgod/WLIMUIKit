@@ -11,7 +11,7 @@
 #import "NIMSessionConfig.h"
 #import "WLInputToolBar.h"
 #import "NIMInputAtCache.h"
-
+#import "WLInputSendAudioContainerView.h"
 @class NIMInputMoreContainerView;
 @class NIMInputEmoticonContainerView;
 @class NIMReplyContentView;
@@ -46,10 +46,11 @@ typedef NS_ENUM(NSInteger, NIMCustomInputType) {
 @interface NIMInputView : UIView
 @property (nonatomic, strong) NIMSession             *session;
 @property (nonatomic, assign) NSInteger              maxTextLength;
-@property (assign, nonatomic, getter=isRecording)    BOOL recording;
 @property (strong, nonatomic)  WLInputToolBar *toolBar;
-@property (nonatomic, strong)   NIMReplyContentView *replyedContent;
-
+@property (nonatomic, strong)  NIMReplyContentView *replyedContent;
+@property (nonatomic, strong)  WLInputSendAudioContainerView *sendAudioContainerView;
+//礼物视图
+@property (nonatomic, strong) UIView *sendGiftContainerView;
 @property (nonatomic, assign) NIMCustomInputType type;
 @property (nonatomic, strong) NIMInputAtCache *atCache;
 
@@ -63,7 +64,6 @@ typedef NS_ENUM(NSInteger, NIMCustomInputType) {
 - (void)setInputActionDelegate:(id<NIMInputActionDelegate>)actionDelegate;
 
 - (void)setInputTextPlaceHolder:(NSString*)placeHolder;
-- (void)updateAudioRecordTime:(NSTimeInterval)time;
 - (void)updateVoicePower:(float)power;
 - (void)addAtItems:(NSArray *)contacts;
 

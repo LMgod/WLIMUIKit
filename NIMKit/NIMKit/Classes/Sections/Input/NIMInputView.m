@@ -25,23 +25,23 @@
 #import "NIMReplyContentView.h"
 #import "M80AttributedLabel+NIMKit.h"
 #import "WLInputSendAudioContainerView.h"
-#import "WLInputSendGiftContainerView.h"
+
 #import "WLInputSendTruthContainerView.h"
 #import "NIMUIConfig.h"
 #import <DongtuStoreSDK/DongtuStoreSDK.h>
+#import "NIMGrowingInternalTextView.h"
 @interface NIMInputView()<WLInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate,NIMReplyContentViewDelegate,DongtuStoreDelegate>
 {
     UIView  *_emoticonView;
 }
-@property (nonatomic, assign) NIMAudioRecordPhase recordPhase;
 @property (nonatomic, weak) id<NIMSessionConfig> inputConfig;
 @property (nonatomic, weak) id<NIMInputDelegate> inputDelegate;
 @property (nonatomic, weak) id<NIMInputActionDelegate> actionDelegate;
 
 @property (nonatomic, assign) CGFloat keyBoardFrameTop; //键盘的frame的top值，屏幕高度 - 键盘高度，由于有旋转的可能，这个值只有当 键盘弹出时才有意义。
 @property (nonatomic, strong) NIMInputMoreContainerView *moreContainerView;
-@property (nonatomic, strong) WLInputSendAudioContainerView *sendAudioContainerView;
-@property (nonatomic, strong) WLInputSendGiftContainerView *sendGiftContainerView;
+
+
 @property (nonatomic, strong) WLInputSendTruthContainerView *sendTruthContainerView;
 
 @end
@@ -54,11 +54,10 @@
     self = [super initWithFrame:frame];
     if (self)
     {
-        _recording = NO;
-        _recordPhase = AudioRecordPhaseEnd;
         _atCache = [[NIMInputAtCache alloc] init];
         _inputConfig = config;
         self.moreContainerView.config = config;
+        self.sendAudioContainerView.config = config;
         self.backgroundColor = [UIColor whiteColor];
         [self configDongtuTheme];
     }
@@ -126,40 +125,17 @@
 {
     _actionDelegate = actionDelegate;
     self.moreContainerView.actionDelegate = actionDelegate;
+    self.sendAudioContainerView.actionDelegate = self.actionDelegate;
 }
 
 - (void)reset
 {
     self.nim_width = self.superview.nim_width;
-    self.type = NIMCustomInputTypeText;
+    [self endEditing:YES];
     [self sizeToFit];
 }
 
 
-
-- (void)setRecordPhase:(NIMAudioRecordPhase)recordPhase {
-    NIMAudioRecordPhase prevPhase = _recordPhase;
-    _recordPhase = recordPhase;
-    if(prevPhase == AudioRecordPhaseEnd) {
-        if(AudioRecordPhaseStart == _recordPhase) {
-            if ([_actionDelegate respondsToSelector:@selector(onStartRecording)]) {
-                [_actionDelegate onStartRecording];
-            }
-        }
-    } else if (prevPhase == AudioRecordPhaseStart || prevPhase == AudioRecordPhaseRecording) {
-        if (AudioRecordPhaseEnd == _recordPhase) {
-            if ([_actionDelegate respondsToSelector:@selector(onStopRecording)]) {
-                [_actionDelegate onStopRecording];
-            }
-        }
-    } else if (prevPhase == AudioRecordPhaseCancelling) {
-        if(AudioRecordPhaseEnd == _recordPhase) {
-            if ([_actionDelegate respondsToSelector:@selector(onCancelRecording)]) {
-                [_actionDelegate onCancelRecording];
-            }
-        }
-    }
-}
 
 - (void)setup
 {
@@ -181,66 +157,15 @@
     //设置最大输入字数
     NSInteger textInputLength = [NIMKit sharedKit].config.inputMaxLength;
     self.maxTextLength = textInputLength;
-    self.type = NIMCustomInputTypeText;
+    _type = NIMCustomInputTypeText;
     [self sizeToFit];
 }
 
-- (void)setRecording:(BOOL)recording
-{
-    if(recording)
-    {
-       
-        self.recordPhase = AudioRecordPhaseRecording;
-    }
-    else
-    {
-        self.recordPhase = AudioRecordPhaseEnd;
-    }
-    _recording = recording;
-}
 
-- (void)clickToolBarEvent:(NSInteger)event{
-    switch (event) {
-        case 0:
-        {
-            self.type = NIMCustomInputTypeEmotion;
-        }
-            break;
-        case 1:
-        {
-            self.type = NIMCustomInputTypeAudio;
-        }
-            break;
-        case 2:
-        {
-            self.type = NIMCustomInputTypeGift;
-        }
-            break;
-        case 3:
-        {
-            self.type = NIMCustomInputTypeTruth;
-        }
-            break;
-        case 4:
-        {
-            self.type = NIMCustomInputTypeMore;
-        }
-            break;
-            
-        default:
-            break;
-    }
-    
-}
+
 
 
 #pragma mark - 外部接口
-
-
-- (void)updateAudioRecordTime:(NSTimeInterval)time {
-    
-}
-
 - (void)updateVoicePower:(float)power {
     
 }
@@ -321,21 +246,21 @@
     return _replyedContent;
 }
 
-- (void)setType:(NIMCustomInputType)type {
-    if (_type == type) {
-        return;
-    }
+- (void)updateCustomInputType:(NIMCustomInputType)type{
     _type = type;
     [self sizeToFit];
     switch (type) {
         case NIMCustomInputTypeEmotion:
             {
-                [self.toolBar.inputTextView becomeFirstResponder];
+                if (!self.toolBar.inputTextView.isFirstResponder) {
+                    [self.toolBar.inputTextView becomeFirstResponder];
+                }
                 self.sendAudioContainerView.hidden = YES;
                 self.sendTruthContainerView.hidden = YES;
                 self.sendGiftContainerView.hidden = YES;
                 self.moreContainerView.hidden = YES;
                 [[DongtuStore sharedInstance] attachEmotionKeyboardToInput:_toolBar.inputTextView.textView];
+                
                
             }
             break;
@@ -346,6 +271,9 @@
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = YES;
             [self bringSubviewToFront:self.sendAudioContainerView];
+            if (self.toolBar.inputTextView.isFirstResponder) {
+                [self.toolBar.inputTextView resignFirstResponder];
+            }
         }
         break;
         case NIMCustomInputTypeGift:
@@ -355,6 +283,9 @@
             self.sendGiftContainerView.hidden = NO;
             self.moreContainerView.hidden = YES;
             [self bringSubviewToFront:self.sendGiftContainerView];
+            if (self.toolBar.inputTextView.isFirstResponder) {
+                [self.toolBar.inputTextView resignFirstResponder];
+            }
         }
         break;
         case NIMCustomInputTypeTruth:
@@ -364,6 +295,9 @@
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = YES;
             [self bringSubviewToFront:self.sendTruthContainerView];
+            if (self.toolBar.inputTextView.isFirstResponder) {
+                [self.toolBar.inputTextView resignFirstResponder];
+            }
         }
         break;
         case NIMCustomInputTypeText:
@@ -372,6 +306,10 @@
             self.sendTruthContainerView.hidden = YES;
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = YES;
+            if (!self.toolBar.inputTextView.isFirstResponder) {
+                [self.toolBar.inputTextView becomeFirstResponder];
+            }
+            [[DongtuStore sharedInstance] switchToDefaultKeyboard];
         }
         break;
         case NIMCustomInputTypeMore:
@@ -380,46 +318,15 @@
             self.sendTruthContainerView.hidden = YES;
             self.sendGiftContainerView.hidden = YES;
             self.moreContainerView.hidden = NO;
+            if (self.toolBar.inputTextView.isFirstResponder) {
+                [self.toolBar.inputTextView resignFirstResponder];
+            }
         }
         break;
         default:
             break;
     }
-}
-
-#pragma mark - button actions
-- (void)onTouchVoiceBtn:(id)sender {
     
-}
-
-- (IBAction)onTouchRecordBtnDown:(id)sender {
-    self.recordPhase = AudioRecordPhaseStart;
-}
-- (IBAction)onTouchRecordBtnUpInside:(id)sender {
-    // finish Recording
-    self.recordPhase = AudioRecordPhaseEnd;
-}
-- (IBAction)onTouchRecordBtnUpOutside:(id)sender {
-    // cancel Recording
-    self.recordPhase = AudioRecordPhaseEnd;
-}
-
-- (IBAction)onTouchRecordBtnDragInside:(id)sender {
-    // "手指上滑，取消发送"
-    self.recordPhase = AudioRecordPhaseRecording;
-}
-- (IBAction)onTouchRecordBtnDragOutside:(id)sender {
-    // "松开手指，取消发送"
-    self.recordPhase = AudioRecordPhaseCancelling;
-}
-
-
-- (void)onTouchEmoticonBtn:(id)sender
-{
-    
-}
-
-- (void)onTouchMoreBtn:(id)sender {
     
 }
 
@@ -441,12 +348,50 @@
     return endEditing;
 }
 
+//toolBar
+- (void)clickToolBarEvent:(NSInteger)event{
+    switch (event) {
+        case 0:
+        {
+            if (self.type != NIMCustomInputTypeEmotion) {
+               self.type = NIMCustomInputTypeEmotion;
+            }else {
+                self.type = NIMCustomInputTypeText;
+            }
+        }
+            break;
+        case 1:
+        {
+            self.type = NIMCustomInputTypeAudio;
+        }
+            break;
+        case 2:
+        {
+            self.type = NIMCustomInputTypeGift;
+        }
+            break;
+        case 3:
+        {
+            self.type = NIMCustomInputTypeTruth;
+        }
+            break;
+        case 4:
+        {
+            self.type = NIMCustomInputTypeMore;
+        }
+            break;
+            
+        default:
+            break;
+    }
+    [self updateCustomInputType:self.type];
+    
+}
 
 #pragma mark - NIMInputToolBarDelegate
 
 - (BOOL)textViewShouldBeginEditing
 {
-    self.type = NIMCustomInputTypeText;
     return YES;
 }
 
@@ -758,7 +703,7 @@
 
 #pragma mark - <DongtuStoreDelegate>😄
 - (void)didSelectGif:(nonnull DTGif *)gif{
-    if ([self.actionDelegate respondsToSelector:@selector(didSelectGif:)]) {
+    if ([self.actionDelegate respondsToSelector:@selector(didSendGif:)]) {
         [self.actionDelegate didSendGif:gif];
     }
 }
@@ -776,9 +721,19 @@
 
 - (void)tapOverlay{
     
-    
+    [self reset];
 }
 #pragma mark - setter、getter
+
+- (void)setSendGiftContainerView:(UIView *)sendGiftContainerView{
+    _sendGiftContainerView = sendGiftContainerView;
+    
+    sendGiftContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    sendGiftContainerView.hidden = YES;
+    if (!sendGiftContainerView.superview) {
+        [self addSubview:_sendGiftContainerView];
+    }
+}
 - (WLInputSendAudioContainerView *)sendAudioContainerView {
     if (!_sendAudioContainerView) {
         _sendAudioContainerView = [[WLInputSendAudioContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
@@ -787,16 +742,6 @@
         [self addSubview:_sendAudioContainerView];
     }
     return _sendAudioContainerView;
-}
-
-- (WLInputSendGiftContainerView *)sendGiftContainerView {
-    if (!_sendGiftContainerView) {
-        _sendGiftContainerView = [[WLInputSendGiftContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
-        _sendGiftContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        _sendGiftContainerView.hidden = YES;
-        [self addSubview:_sendGiftContainerView];
-    }
-    return _sendGiftContainerView;
 }
 
 - (WLInputSendTruthContainerView *)sendTruthContainerView {
@@ -816,8 +761,6 @@
         _moreContainerView.nim_top = [NIMUIConfig topInputViewHeight];
         _moreContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         _moreContainerView.hidden = YES;
-        
-        
         [self addSubview:_moreContainerView];
     }
     return _moreContainerView;

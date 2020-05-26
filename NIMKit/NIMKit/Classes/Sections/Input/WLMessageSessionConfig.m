@@ -7,6 +7,7 @@
 
 #import "WLMessageSessionConfig.h"
 #import "NSString+NIMKit.h"
+#import "NIMUITextHelper.h"
 @implementation WLMessageSessionConfig
 
 /**
@@ -16,11 +17,11 @@
     NIMMediaItem *cameraItem = [NIMMediaItem item:@"onTapMediaItemShoot:"
                                       normalImage:[UIImage imageNamed:@"WL_action_camera"]
                                     selectedImage:[UIImage imageNamed:@"WL_action_camera"]
-                                            title:@"拍照".nim_localized];
+                                            title:[NIMUITextHelper UITextFeedPublicFeedWayCamera]];
     NIMMediaItem *photoItem = [NIMMediaItem item:@"onTapMediaItemPicture:"
                                      normalImage:[UIImage imageNamed:@"WL_action_photo"]
                                    selectedImage:[UIImage imageNamed:@"WL_action_photo"]
-                                           title:@"照片".nim_localized];
+                                           title:[NIMUITextHelper UITextFeedPublicFeedWayAlbum]];
     NSMutableArray *itemsAry = [NSMutableArray arrayWithArray:@[cameraItem,photoItem]];
     
     return itemsAry;

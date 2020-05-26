@@ -29,4 +29,10 @@
 - (instancetype)initWithSession:(NIMSession *)session;
 - (id<NIMSessionConfig>)sessionConfig;
 - (void)sendMessage:(NIMMessage *)message;
+
+#pragma mark - 录音相关接口
+- (void)sendAudoMessageWithPath:(NSString *)filePath duration:(NSTimeInterval)duration;
+- (void)onRecordFailed:(NSError *)error;
+- (BOOL)recordFileCanBeSend:(NSString *)filepath;
+- (void)showRecordFileNotSendReason;
 @end

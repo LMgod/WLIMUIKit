@@ -25,13 +25,14 @@
 #import "NIMKitDependency.h"
 #import "NIMKitQuickCommentUtil.h"
 #import "WLMessageSessionConfig.h"
+#import "NIMUITextHelper.h"
 @interface NIMSessionViewController ()<NIMMediaManagerDelegate,NIMInputDelegate>
 
 @property (nonatomic,readwrite) NIMMessage *messageForMenu;
 @property (nonatomic,strong)    NSIndexPath *lastVisibleIndexPathBeforeRotation;
 @property (nonatomic,strong)    NIMSessionConfigurator *configurator;
 @property (nonatomic,strong)    UITapGestureRecognizer *tableViewTapGesture;
-
+@property (nonatomic, assign) NSTimeInterval recordAudioTime;//语音录制时长
 @end
 
 @implementation NIMSessionViewController
@@ -350,10 +351,10 @@
     }
 }
 
-#pragma mark - NIMMediaManagerDelegate
+#pragma mark - NIMMediaManagerDelegate 音频管理
 - (void)recordAudio:(NSString *)filePath didBeganWithError:(NSError *)error {
     if (!filePath || error) {
-        _sessionInputView.recording = NO;
+        _sessionInputView.sendAudioContainerView.recording = NO;
         [self onRecordFailed:error];
     }
 }
@@ -361,30 +362,40 @@
 - (void)recordAudio:(NSString *)filePath didCompletedWithError:(NSError *)error {
     if(!error) {
         if ([self recordFileCanBeSend:filePath]) {
-            [self sendMessage:[NIMMessageMaker msgWithAudio:filePath]];
+            if (_recordAudioTime < 0.5) {
+                [self.view makeToast:[NIMUITextHelper UITextMsgSessionAudioRecordTimeShort] duration:1 position:CSToastPositionCenter];
+            }else{
+                [self sendAudoMessageWithPath:filePath duration:_recordAudioTime];
+            }
         }else{
             [self showRecordFileNotSendReason];
         }
     } else {
         [self onRecordFailed:error];
     }
-    _sessionInputView.recording = NO;
+    _sessionInputView.sendAudioContainerView.recording = NO;
+    _recordAudioTime = 0;
 }
 
 
 - (void)recordAudioDidCancelled {
-    _sessionInputView.recording = NO;
+    _sessionInputView.sendAudioContainerView.recording = NO;
+    _recordAudioTime = 0;
 }
 
 - (void)recordAudioProgress:(NSTimeInterval)currentTime {
-    [_sessionInputView updateAudioRecordTime:currentTime];
+    _recordAudioTime = currentTime;
+    [_sessionInputView.sendAudioContainerView updataRecordTime:currentTime];
 }
 
 - (void)recordAudioInterruptionBegin {
     [[NIMSDK sharedSDK].mediaManager cancelRecord];
 }
 
-
+- (void)sendAudoMessageWithPath:(NSString *)filePath duration:(NSTimeInterval)duration{
+    
+    
+}
 
 #pragma mark - 录音相关接口
 - (void)onRecordFailed:(NSError *)error{}
@@ -439,11 +450,11 @@
 - (void)onSelectChartlet:(NSString *)chartletId
                  catalog:(NSString *)catalogId{}
 
+//语音相关
 - (void)onCancelRecording
 {
     [[NIMSDK sharedSDK].mediaManager cancelRecord];
 }
-
 - (void)onStopRecording
 {
     [[NIMSDK sharedSDK].mediaManager stopRecord];
@@ -451,13 +462,12 @@
 
 - (void)onStartRecording
 {
-    _sessionInputView.recording = YES;
+    _sessionInputView.sendAudioContainerView.recording = YES;
     
     NIMAudioType type = [self recordAudioType];
     NSTimeInterval duration = [NIMKit sharedKit].config.recordMaxDuration;
     
     [[NIMSDK sharedSDK].mediaManager addDelegate:self];
-    
     [[NIMSDK sharedSDK].mediaManager record:type
                                    duration:duration];
 }
@@ -759,7 +769,7 @@
 
 - (void)onTapTableView:(id)sender
 {
-    [self.sessionInputView endEditing:YES];
+    [self.sessionInputView reset];
 }
 
 #pragma mark - 旋转处理 (iOS8 or above)
