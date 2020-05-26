@@ -299,12 +299,7 @@
             [NIMKitProgressHUD dismiss];
             if (!error) {
                 NSString *urlString = weakSelf.teamListManager.team.avatarUrl;
-                SDWebImageManager *sdManager = [SDWebImageManager sharedManager];
-                [sdManager.imageCache storeImage:imageForAvatarUpload
-                                       imageData:data
-                                          forKey:urlString
-                                       cacheType:SDImageCacheTypeAll
-                                      completion:nil];
+                [[YYWebImageManager sharedManager].cache setImage:imageForAvatarUpload imageData:data forKey:urlString withType:YYImageCacheTypeAll];
                 [wself reloadTableHeaderData];
             }
             [wself showToastMsg:msg];

@@ -18,6 +18,6 @@
 - (void)setAvatarByMessage:(NIMMessage *)message;
 
 - (void)nim_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder;
-- (void)nim_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(SDWebImageOptions)options;
+- (void)nim_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(YYWebImageOptions)options;
 
 @end

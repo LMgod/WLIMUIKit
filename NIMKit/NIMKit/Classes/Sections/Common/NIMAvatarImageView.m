@@ -149,11 +149,11 @@
     [self setImageWithUrlString:url.absoluteString placeholderImage:placeholder options:0];
 }
 
-- (void)nim_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(SDWebImageOptions)options {
+- (void)nim_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(YYWebImageOptions)options {
     [self setImageWithUrlString:url.absoluteString placeholderImage:placeholder options:options];
 }
 
-- (void)setImageWithUrlString:(NSString *)urlString placeholderImage:(UIImage *)placeholderImage options:(SDWebImageOptions)options {
+- (void)setImageWithUrlString:(NSString *)urlString placeholderImage:(UIImage *)placeholderImage options:(YYWebImageOptions)options {
     if (placeholderImage && self.image != placeholderImage) {
         self.image = placeholderImage;
     }
@@ -174,7 +174,7 @@
     }];
 }
 
-- (void)didSetImageUrl:(NSURL *)url placeholderImage:(UIImage *)placeholderImage options:(SDWebImageOptions)options {
+- (void)didSetImageUrl:(NSURL *)url placeholderImage:(UIImage *)placeholderImage options:(YYWebImageOptions)options {
     if (!url) {
         return;
     }
@@ -182,14 +182,11 @@
     UIImage *fixedPlaceholderImage  = [self imageAddCorner:placeholderImage
                                                     radius:_cornerRadius
                                                    andSize:self.bounds.size];
-    [_imageView sd_setImageWithURL:url
-                  placeholderImage:fixedPlaceholderImage
-                           options:SDWebImageAvoidAutoSetImage|SDWebImageDelayPlaceholder
-                         completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
-                             if (image) {
-                                 weakSelf.image = image;
-                             }
-                             
+    [_imageView yy_setImageWithURL:url placeholder:fixedPlaceholderImage options:0 completion:^(UIImage * _Nullable image, NSURL * _Nonnull url, YYWebImageFromType from, YYWebImageStage stage, NSError * _Nullable error) {
+        if (image) {
+            weakSelf.image = image;
+        }
+        
     }];
 }
 @end

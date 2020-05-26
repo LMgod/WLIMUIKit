@@ -40,7 +40,7 @@
     [self refreshTitle:member.showName];
     self.memberId = member.memberId;
     NSURL *url = member.avatarUrlString ? [NSURL URLWithString:member.avatarUrlString] : nil;
-    [_avatarImageView nim_setImageWithURL:url placeholderImage:member.avatarImage options:SDWebImageRetryFailed];
+    [_avatarImageView nim_setImageWithURL:url placeholderImage:member.avatarImage options:0];
 }
 
 - (void)refreshUser:(id<NIMGroupMemberProtocol>)member{
@@ -63,7 +63,7 @@
 
 - (void)refreshAvatar:(NIMKitInfo *)info{
     NSURL *url = info.avatarUrlString ? [NSURL URLWithString:info.avatarUrlString] : nil;
-    [_avatarImageView nim_setImageWithURL:url placeholderImage:info.avatarImage options:SDWebImageRetryFailed];
+    [_avatarImageView nim_setImageWithURL:url placeholderImage:info.avatarImage options:0];
 }
 
 - (void)onPressAvatar:(id)sender{
