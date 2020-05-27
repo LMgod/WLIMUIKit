@@ -25,8 +25,6 @@
 #import "NIMReplyContentView.h"
 #import "M80AttributedLabel+NIMKit.h"
 #import "WLInputSendAudioContainerView.h"
-
-#import "WLInputSendTruthContainerView.h"
 #import "NIMUIConfig.h"
 #import <DongtuStoreSDK/DongtuStoreSDK.h>
 #import "NIMGrowingInternalTextView.h"
@@ -42,7 +40,7 @@
 @property (nonatomic, strong) NIMInputMoreContainerView *moreContainerView;
 
 
-@property (nonatomic, strong) WLInputSendTruthContainerView *sendTruthContainerView;
+
 
 @end
 
@@ -738,6 +736,17 @@
         [self addSubview:_sendGiftContainerView];
     }
 }
+
+- (void)setSendTruthContainerView:(UIView *)sendTruthContainerView{
+    _sendTruthContainerView = sendTruthContainerView;
+    sendTruthContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    sendTruthContainerView.hidden = YES;
+    if (!_sendTruthContainerView.superview) {
+        [self addSubview:_sendTruthContainerView];
+    }
+    
+}
+
 - (WLInputSendAudioContainerView *)sendAudioContainerView {
     if (!_sendAudioContainerView) {
         _sendAudioContainerView = [[WLInputSendAudioContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
@@ -748,15 +757,6 @@
     return _sendAudioContainerView;
 }
 
-- (WLInputSendTruthContainerView *)sendTruthContainerView {
-    if (!_sendTruthContainerView) {
-        _sendTruthContainerView = [[WLInputSendTruthContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
-        _sendTruthContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        _sendTruthContainerView.hidden = YES;
-        [self addSubview:_sendTruthContainerView];
-    }
-    return _sendTruthContainerView;
-}
 
 - (NIMInputMoreContainerView *)moreContainerView {
     if (!_moreContainerView) {
