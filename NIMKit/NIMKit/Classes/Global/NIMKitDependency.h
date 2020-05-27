@@ -36,13 +36,12 @@
 @import Toast;
 #endif
 
-
-#if __has_include(<TZImagePickerController/TZImagePickerController.h>)
-#import <TZImagePickerController/TZImagePickerController.h>
-#elif __has_include("TZImagePickerController.h")
-#import "TZImagePickerController.h"
+#if __has_include(<HXPhotoPicker/HXPhotoPicker.h>)
+#import <HXPhotoPicker/HXPhotoPicker.h>
+#elif __has_include("HXPhotoPicker.h")
+#import "HXPhotoPicker.h"
 #else
-@import TZImagePickerController;
+@import HXPhotoPicker;
 #endif
 
 

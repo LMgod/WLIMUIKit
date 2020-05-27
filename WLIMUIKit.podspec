@@ -23,11 +23,10 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => "https://github.com/LMgod/WLIMUIKit.git", :tag => spec.version }
   spec.source_files  = 'NIMKit/NIMKit/Classes/**/*.{h,m}'
   spec.resources = "NIMKit/Resources/*"
-  
   spec.dependency "NIMSDK_LITE", '~> 7.6.0'
   spec.dependency 'YYWebImage', '~> 1.0.5'
   spec.dependency "Toast", "~> 3.0"
-  spec.dependency "TZImagePickerController", "~> 3.2.1"
+  spec.dependency "HXPhotoPicker", "~> 2.4.3"
   spec.dependency "M80AttributedLabel", "~> 1.9.9"
   spec.dependency "YYImage", "~>  1.0.4"
   spec.dependency "YYImage/WebP", "~>  1.0.4"

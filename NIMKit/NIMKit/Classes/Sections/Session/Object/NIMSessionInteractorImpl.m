@@ -10,13 +10,12 @@
 #import <NIMSDK/NIMSDK.h>
 #import "NIMMessageModel.h"
 #import "NIMSessionTableAdapter.h"
-#import "NIMKitMediaFetcher.h"
 #import "NIMMessageMaker.h"
 #import "NIMLocationViewController.h"
 #import "NIMKitAudioCenter.h"
 #import "NIMMessageModel.h"
 #import "NIMKitQuickCommentUtil.h"
-
+#import <HXPhotoPicker/HXPhotoPicker.h>
 static const void * const NTESDispatchMessageDataPrepareSpecificKey = &NTESDispatchMessageDataPrepareSpecificKey;
 
 typedef void(^NIMSessionInteractorHandler) (BOOL success, id result);
@@ -39,7 +38,6 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
 
 @property (nonatomic,strong) id<NIMSessionConfig> sessionConfig;
 
-@property (nonatomic,strong) NIMKitMediaFetcher *mediaFetcher;
 
 @property (nonatomic,strong) NSMutableArray *pendingChatroomModels;
 
@@ -650,54 +648,44 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
 
 - (void)mediaPicturePressed
 {
-    [self.mediaFetcher fetchPhotoFromLibrary:^(NSArray *images, NSString *path, PHAssetMediaType type) {
-        switch (type) {
-            case PHAssetMediaTypeImage:
-            {
-                for (UIImage *image in images) {
-                    NIMMessage *message = [NIMMessageMaker msgWithImage:image];
-                    [self sendMessage:message toMessage:nil];
-                }
-                if (path) {
-                    NIMMessage *message;
-                    if ([path.pathExtension isEqualToString:@"HEIC"])
-                    {
-                        //iOS 11 苹果采用了新的图片格式 HEIC ，如果采用原图会导致其他设备的兼容问题，在上层做好格式的兼容转换,压成 jpeg
-                        UIImage *image = [UIImage imageWithContentsOfFile:path];
-                        message = [NIMMessageMaker msgWithImage:image];
-                    }
-                    else
-                    {
-                        message = [NIMMessageMaker msgWithImagePath:path];
-                    }
-                    
-                    [self sendMessage:message toMessage:nil];
-                }
-            }
-                break;
-            case PHAssetMediaTypeVideo:
-            {
-                NIMMessage *message = [NIMMessageMaker msgWithVideo:path];
+    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+  
+    if (rootVC.presentedViewController) {
+        rootVC = rootVC.presentedViewController;
+        
+    }
+    
+    [rootVC hx_presentSelectPhotoControllerWithManager:[self.class defaultPhotoManager] didDone:^(NSArray<HXPhotoModel *> * _Nullable allList, NSArray<HXPhotoModel *> * _Nullable photoList, NSArray<HXPhotoModel *> * _Nullable videoList, BOOL isOriginal, UIViewController * _Nullable viewController, HXPhotoManager * _Nullable manager) {
+        [photoList hx_requestImageWithOriginal:YES completion:^(NSArray<UIImage *> * _Nullable imageArray, NSArray<HXPhotoModel *> * _Nullable errorArray) {
+            [imageArray enumerateObjectsUsingBlock:^(UIImage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NIMMessage *message = [NIMMessageMaker msgWithImage:obj];
                 [self sendMessage:message toMessage:nil];
-            }
-                break;
-            default:
-                return;
-        }
+            }];
+        }];
+    } cancel:^(UIViewController * _Nullable viewController, HXPhotoManager * _Nullable manager) {
         
     }];
 }
 
+
 - (void)mediaShootPressed
 {
-    [self.mediaFetcher fetchMediaFromCamera:^(NSString *path, UIImage *image) {
-        NIMMessage *message;
-        if (image) {
-            message = [NIMMessageMaker msgWithImage:image];
-        }else{
-            message = [NIMMessageMaker msgWithVideo:path];
-        }
-        [self sendMessage:message toMessage:nil];
+    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    
+      if (rootVC.presentedViewController) {
+          rootVC = rootVC.presentedViewController;
+          
+      }
+    [rootVC hx_presentCustomCameraViewControllerWithManager:[self.class defaultPhotoManager] done:^(HXPhotoModel *model, HXCustomCameraViewController *viewController) {
+        model.selectIndexStr = @"1";
+        [@[model] hx_requestImageWithOriginal:YES completion:^(NSArray<UIImage *> * _Nullable imageArray, NSArray<HXPhotoModel *> * _Nullable errorArray) {
+            [imageArray enumerateObjectsUsingBlock:^(UIImage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NIMMessage *message = [NIMMessageMaker msgWithImage:obj];
+                [self sendMessage:message toMessage:nil];
+            }];
+        }];
+    } cancel:^(HXCustomCameraViewController *viewController) {
+        
     }];
 }
 
@@ -816,13 +804,6 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
     return should;
 }
 
-- (NIMKitMediaFetcher *)mediaFetcher
-{
-    if (!_mediaFetcher) {
-        _mediaFetcher = [[NIMKitMediaFetcher alloc] init];
-    }
-    return _mediaFetcher;
-}
 
 - (void)addListener
 {
@@ -917,6 +898,24 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
             [weakSelf processChatroomMessageModels];
         });
     }
+}
+
++ (HXPhotoManager *)defaultPhotoManager{
+    HXPhotoManager *manager = [[HXPhotoManager alloc] initWithType:HXPhotoManagerSelectedTypePhoto];
+    manager.configuration.openCamera = NO;//是否打开相机功能
+    manager.configuration.languageType = HXPhotoLanguageTypeSc;
+    manager.configuration.lookLivePhoto = YES;//开启查看LivePhoto功能
+    manager.configuration.lookGifPhoto = NO;
+    manager.configuration.photoMaxNum = 9;//照片最大选择数
+    manager.configuration.showDateSectionHeader = NO;
+    manager.configuration.selectTogether = NO;//图片和视频是否能够同时选择
+    manager.configuration.hideOriginalBtn = NO;//是否隐藏原图按钮
+    manager.configuration.lookLivePhoto = YES;
+    manager.configuration.photoCanEdit = YES;//照片是否可以编辑
+    manager.configuration.albumShowMode = HXPhotoAlbumShowModePopup;//相册列表展示方式
+    
+    return manager;
+    
 }
 
 #pragma mark - 聊天扩展相关
