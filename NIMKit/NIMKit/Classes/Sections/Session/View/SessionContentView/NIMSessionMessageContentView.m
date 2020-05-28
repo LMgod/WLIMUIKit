@@ -91,4 +91,5 @@
     _bubbleImageView.highlighted = highlighted;
 }
 
+- (void)prepareForReuse{}
 @end

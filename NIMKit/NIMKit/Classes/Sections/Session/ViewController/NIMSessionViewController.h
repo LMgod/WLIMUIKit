@@ -35,4 +35,13 @@
 - (void)onRecordFailed:(NSError *)error;
 - (BOOL)recordFileCanBeSend:(NSString *)filepath;
 - (void)showRecordFileNotSendReason;
+
+#pragma mark - 操作接口
+- (void)uiAddMessages:(NSArray *)messages;
+- (void)uiInsertMessages:(NSArray *)messages;
+- (NIMMessageModel *)uiDeleteMessage:(NIMMessage *)message;
+- (void)uiUpdateMessage:(NIMMessage *)message;
+- (void)uiPinMessage:(NIMMessage *)message;
+
+
 @end

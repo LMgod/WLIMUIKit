@@ -47,6 +47,11 @@
     return self;
 }
 
+- (void)prepareForReuse{
+    [super prepareForReuse];
+    [self.bubbleView prepareForReuse];
+}
+
 - (void)dealloc
 {
     [self removeGestureRecognizer:_longPressGesture];

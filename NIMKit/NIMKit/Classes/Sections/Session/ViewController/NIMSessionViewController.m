@@ -273,6 +273,7 @@
     if ([self shouldAddListenerForNewMsg])
     {
         NIMMessage *message = messages.firstObject;
+        
         NIMSession *session = message.session;
         if (![session isEqual:self.session] || !messages.count)
         {

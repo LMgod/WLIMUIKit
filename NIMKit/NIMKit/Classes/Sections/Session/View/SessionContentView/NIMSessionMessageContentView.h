@@ -77,5 +77,7 @@ typedef NS_ENUM (NSInteger, NIMSessionMessageContentViewLayout){
  */
 - (UIImage *)chatBubbleImageForState:(UIControlState)state outgoing:(BOOL)outgoing;
 
+- (void)prepareForReuse;
+
 @end
 
