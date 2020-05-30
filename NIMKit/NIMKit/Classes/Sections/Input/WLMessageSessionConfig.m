@@ -41,7 +41,7 @@
  *
  */
 - (BOOL)shouldHandleReceipt{
-    return YES;
+    return NO;
 }
 
 /**
@@ -54,18 +54,7 @@
 - (BOOL)shouldHandleReceiptForMessage:(NIMMessage *)message
 {
     //文字，语音，图片，视频，文件，地址位置和自定义消息都支持已读回执，其他的不支持
-    NIMMessageType type = message.messageType;
-//    if (type == NIMMessageTypeCustom) {
-//        NIMCustomObject *object = (NIMCustomObject *)message.messageObject;
-//        id attachment = object.attachment;
-//
-//        //        if ([attachment isKindOfClass:[NTESWhiteboardAttachment class]]) {
-//        //            return NO;
-//        //        }
-//    }
-    
-    
-    
+    NIMMessageType type = message.messageType;    
     return type == NIMMessageTypeText ||
     type == NIMMessageTypeAudio ||
     type == NIMMessageTypeImage ||
@@ -84,14 +73,5 @@
 {
     return NIMAudioTypeAAC;
 }
-/**
- *  最大录音时长 2分钟
- *
- *  @return 录音时常
- */
-- (NSTimeInterval)maxRecordDuration {
-    
-    return 2 * 60.0;
-    
-}
+
 @end

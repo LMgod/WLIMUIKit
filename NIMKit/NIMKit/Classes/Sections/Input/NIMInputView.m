@@ -37,10 +37,6 @@
 @property (nonatomic, weak) id<NIMInputActionDelegate> actionDelegate;
 
 @property (nonatomic, assign) CGFloat keyBoardFrameTop; //键盘的frame的top值，屏幕高度 - 键盘高度，由于有旋转的可能，这个值只有当 键盘弹出时才有意义。
-@property (nonatomic, strong) NIMInputMoreContainerView *moreContainerView;
-
-
-
 
 @end
 
@@ -54,7 +50,6 @@
     {
         _atCache = [[NIMInputAtCache alloc] init];
         _inputConfig = config;
-        self.moreContainerView.config = config;
         self.sendAudioContainerView.config = config;
         self.backgroundColor = [UIColor whiteColor];
         [self configDongtuTheme];
@@ -122,7 +117,6 @@
 - (void)setInputActionDelegate:(id<NIMInputActionDelegate>)actionDelegate
 {
     _actionDelegate = actionDelegate;
-    self.moreContainerView.actionDelegate = actionDelegate;
     self.sendAudioContainerView.actionDelegate = self.actionDelegate;
 }
 
@@ -747,6 +741,15 @@
     
 }
 
+- (void)setMoreContainerView:(UIView *)moreContainerView{
+    _moreContainerView = moreContainerView;
+    moreContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    moreContainerView.hidden = YES;
+    if (!_moreContainerView.superview) {
+        [self addSubview:_moreContainerView];
+    }
+}
+
 - (WLInputSendAudioContainerView *)sendAudioContainerView {
     if (!_sendAudioContainerView) {
         _sendAudioContainerView = [[WLInputSendAudioContainerView alloc] initWithFrame:CGRectMake(0, [NIMUIConfig topInputViewHeight], self.nim_width, [NIMUIConfig bottomInputViewHeight])];
@@ -756,20 +759,4 @@
     }
     return _sendAudioContainerView;
 }
-
-
-- (NIMInputMoreContainerView *)moreContainerView {
-    if (!_moreContainerView) {
-        _moreContainerView = [[NIMInputMoreContainerView alloc] initWithFrame:CGRectZero];
-        _moreContainerView.nim_size = [_moreContainerView sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
-        _moreContainerView.nim_top = [NIMUIConfig topInputViewHeight];
-        _moreContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        _moreContainerView.hidden = YES;
-        [self addSubview:_moreContainerView];
-    }
-    return _moreContainerView;
-}
-
-
-
 @end

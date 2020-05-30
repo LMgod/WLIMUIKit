@@ -514,6 +514,7 @@
 
 #pragma mark - NIMMessageCellDelegate
 - (BOOL)onTapCell:(NIMKitEvent *)event{
+    
     BOOL handle = NO;
     NSString *eventName = event.eventName;
     if ([eventName isEqualToString:NIMKitEventNameTapAudio])
@@ -523,6 +524,7 @@
     }
     return handle;
 }
+
 
 - (void)onRetryMessage:(NIMMessage *)message
 {
@@ -545,16 +547,13 @@
         handle = NO;
         return handle;
     }
-    if ([self shouldShowMenuByMessage:message])
-    {
-        [self.advanceMenu showWithMessage:message];
-    }
+    [self handleLongPressCell:message inView:view];
     handle = YES;
     return handle;
 }
 
-
-
+- (void)handleLongPressCell:(NIMMessage *)message
+                     inView:(UIView *)view{}
 - (BOOL)disableAudioPlayedStatusIcon:(NIMMessage *)message
 {
     BOOL disable = NO;
@@ -601,11 +600,7 @@
     
 }
 
-#pragma mark - 配置项
-- (id<NIMSessionConfig>)sessionConfig
-{
-    return [[WLMessageSessionConfig alloc] init];
-}
+
 
 #pragma mark - 配置项列表
 //是否需要监听新消息通知 : 某些场景不需要监听新消息，如浏览服务器消息历史界面
@@ -880,18 +875,6 @@
     return YES;
 }
 
-
-- (NIMAdvanceMenu *)advanceMenu
-{
-    if (!_advanceMenu)
-    {
-        _advanceMenu = [[NIMAdvanceMenu alloc] initWithFrame:CGRectMake(0, 0, 320, 190) emotions:self.sessionConfig.emotionItems];
-        [_advanceMenu setConfig:self.sessionConfig];
-        [self.view addSubview:_advanceMenu];
-        _advanceMenu.actionDelegate = self;
-    }
-    return _advanceMenu;
-}
 
 
 

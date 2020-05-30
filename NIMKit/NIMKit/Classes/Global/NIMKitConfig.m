@@ -82,7 +82,7 @@
 {
     _messageInterval = 300;
     _messageLimit    = 20;
-    _recordMaxDuration = 60.f;
+    _recordMaxDuration = 120.f;
     _placeholder = @"请输入消息".nim_localized;
     _inputMaxLength = 1000;
     _nickFont  = [UIFont systemFontOfSize:13.0];

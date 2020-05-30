@@ -53,6 +53,7 @@ typedef NS_ENUM(NSInteger, NIMCustomInputType) {
 @property (nonatomic, strong) UIView *sendGiftContainerView;
 //真心话大冒险
 @property (nonatomic, strong) UIView *sendTruthContainerView;
+@property (nonatomic, strong) UIView *moreContainerView;
 @property (nonatomic, assign) NIMCustomInputType type;
 @property (nonatomic, strong) NIMInputAtCache *atCache;
 

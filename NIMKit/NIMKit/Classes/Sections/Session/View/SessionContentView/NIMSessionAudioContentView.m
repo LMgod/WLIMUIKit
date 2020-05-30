@@ -52,6 +52,7 @@
     _audioBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
     _audioBackgroundView.layer.cornerRadius = 16.f;
     _audioBackgroundView.userInteractionEnabled = NO;
+    _audioBackgroundView.hidden = YES;
     [self addSubview:_audioBackgroundView];
     
     UIImage * image = [UIImage nim_imageInKit:@"icon_receiver_voice_playing.png"];

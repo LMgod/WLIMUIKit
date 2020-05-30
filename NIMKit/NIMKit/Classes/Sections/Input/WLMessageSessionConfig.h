@@ -9,13 +9,6 @@
 #import "NIMSessionConfig.h"
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, WLMoreItemType) {
-    WLMoreItemTypeSendPhto = 0,
-    WLMoreItemTypeSpCall,
-    WLMoreItemTypeYYCall,
-    WLMoreItemTypeSendGift,
-    WLMoreItemTypeSendCamera,
-};
 @interface WLMessageSessionConfig : NSObject<NIMSessionConfig>
 
 @end

@@ -20,7 +20,6 @@
 
 @property (nonatomic, strong)  NIMInputView *sessionInputView;
 
-@property (nonatomic,strong)    NIMAdvanceMenu *advanceMenu;
 
 @property (nonatomic, strong)  NIMSession *session;
 
@@ -29,6 +28,9 @@
 - (instancetype)initWithSession:(NIMSession *)session;
 - (id<NIMSessionConfig>)sessionConfig;
 - (void)sendMessage:(NIMMessage *)message;
+
+#pragma mark - 菜单
+- (NIMMessage *)messageForMenu;
 
 #pragma mark - 录音相关接口
 - (void)sendAudoMessageWithPath:(NSString *)filePath duration:(NSTimeInterval)duration;
@@ -43,5 +45,13 @@
 - (void)uiUpdateMessage:(NIMMessage *)message;
 - (void)uiPinMessage:(NIMMessage *)message;
 
+#pragma mark - cellHandle
+- (BOOL)onTapCell:(NIMKitEvent *)event;
+- (void)handleLongPressCell:(NIMMessage *)message
+                     inView:(UIView *)view;
+
+
+- (void)copyText:(id)sender;
+- (void)deleteMsg:(id)sender;
 
 @end

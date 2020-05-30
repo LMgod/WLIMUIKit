@@ -10,7 +10,7 @@
 #import "NIMKit.h"
 #import "NIMKitInfoFetchOption.h"
 #import "NIMInputEmoticonManager.h"
-
+#import "NIMUITextHelper.h"
 @implementation NIMKitUtil
 
 + (NSString *)genFilenameWithExt:(NSString *)ext
@@ -45,6 +45,7 @@
 
 + (NSString*)showTime:(NSTimeInterval) msglastTime showDetail:(BOOL)showDetail
 {
+    
     //今天的时间
     NSDate * nowDate = [NSDate date];
     NSDate * msgDate = [NSDate dateWithTimeIntervalSince1970:msglastTime];
@@ -55,75 +56,87 @@
     
     NSInteger hour = msgDateComponents.hour;
     double OnedayTimeIntervalValue = 24*60*60;  //一天的秒数
-
+    
     result = [NIMKitUtil getPeriodOfTime:hour withMinute:msgDateComponents.minute];
-    if (hour > 12)
-    {
-        hour = hour - 12;
-    }
+    
+    
     
     BOOL isSameMonth = (nowDateComponents.year == msgDateComponents.year) && (nowDateComponents.month == msgDateComponents.month);
     
-    if(isSameMonth && (nowDateComponents.day == msgDateComponents.day)) //同一天,显示时间
-    {
-        result = [[NSString alloc] initWithFormat:@"%@ %zd:%02d",result,hour,(int)msgDateComponents.minute];
+    if (showDetail) {
+        //单聊页
+        if(isSameMonth && (nowDateComponents.day == msgDateComponents.day)) //同一天,显示时间
+        {
+            result = [[NSString alloc] initWithFormat:@"%zd:%02d",hour,(int)msgDateComponents.minute];
+        }
+        else//显示日期
+        {
+            NSString *day = [NSString stringWithFormat:@"%zd-%zd-%zd", msgDateComponents.year, msgDateComponents.month, msgDateComponents.day];
+            result = [day stringByAppendingFormat:@" %zd:%02d",hour,(int)msgDateComponents.minute];
+        }
+        return result;
+        
+    } else {
+        //消息列表
+        if(isSameMonth && (nowDateComponents.day == msgDateComponents.day)) //同一天,显示时间
+            {
+                result = [[NSString alloc] initWithFormat:@"%zd:%02d",hour,(int)msgDateComponents.minute];
+            }
+            else if(isSameMonth && (nowDateComponents.day == (msgDateComponents.day+1)))//昨天
+            {
+                NSString *yesStr = [NIMUITextHelper UITextWithTimeAlertYesterday];
+                result = yesStr;
+            }
+            else if([nowDate timeIntervalSinceDate:msgDate] < 7 * OnedayTimeIntervalValue)//一周内
+            {
+                NSString *weekDay = [NIMKitUtil weekdayStr:msgDateComponents.weekday];
+                result = weekDay;
+            }
+            else//显示日期
+            {
+                NSString *day = [NSString stringWithFormat:@"%zd-%zd-%zd", msgDateComponents.year, msgDateComponents.month, msgDateComponents.day];
+                result = day;
+            }
+            return result;
     }
-    else if(isSameMonth && (nowDateComponents.day == (msgDateComponents.day+1)))//昨天
-    {
-        result = showDetail?  [[NSString alloc] initWithFormat:@"昨天%@ %zd:%02d".nim_localized,result,hour,(int)msgDateComponents.minute] : @"昨天".nim_localized;
-    }
-    else if(isSameMonth && (nowDateComponents.day == (msgDateComponents.day+2))) //前天
-    {
-        result = showDetail? [[NSString alloc] initWithFormat:@"前天%@ %zd:%02d".nim_localized,result,hour,(int)msgDateComponents.minute] : @"前天".nim_localized;
-    }
-    else if([nowDate timeIntervalSinceDate:msgDate] < 7 * OnedayTimeIntervalValue)//一周内
-    {
-        NSString *weekDay = [NIMKitUtil weekdayStr:msgDateComponents.weekday];
-        result = showDetail? [weekDay stringByAppendingFormat:@"%@ %zd:%02d",result,hour,(int)msgDateComponents.minute] : weekDay;
-    }
-    else//显示日期
-    {
-        NSString *day = [NSString stringWithFormat:@"%zd-%zd-%zd", msgDateComponents.year, msgDateComponents.month, msgDateComponents.day];
-        result = showDetail? [day stringByAppendingFormat:@"%@ %zd:%02d",result,hour,(int)msgDateComponents.minute]:day;
-    }
-    return result;
 }
 
-#pragma mark - Private
 
+#pragma mark - Private
 + (NSString *)getPeriodOfTime:(NSInteger)time withMinute:(NSInteger)minute
 {
     NSInteger totalMin = time *60 + minute;
     NSString *showPeriodOfTime = @"";
     if (totalMin > 0 && totalMin <= 5 * 60)
     {
-        showPeriodOfTime = @"凌晨".nim_localized;
+        showPeriodOfTime = @"凌晨";
     }
     else if (totalMin > 5 * 60 && totalMin < 12 * 60)
     {
-        showPeriodOfTime = @"上午".nim_localized;
+        showPeriodOfTime = @"上午";
     }
     else if (totalMin >= 12 * 60 && totalMin <= 18 * 60)
     {
-        showPeriodOfTime = @"下午".nim_localized;
+        showPeriodOfTime = @"下午";
     }
     else if ((totalMin > 18 * 60 && totalMin <= (23 * 60 + 59)) || totalMin == 0)
     {
-        showPeriodOfTime = @"晚上".nim_localized;
+        showPeriodOfTime = @"晚上";
     }
     return showPeriodOfTime;
 }
 
+
 +(NSString*)weekdayStr:(NSInteger)dayOfWeek
 {
     static NSDictionary *daysOfWeekDict = nil;
-    daysOfWeekDict = @{@(1):@"星期日".nim_localized,
-                       @(2):@"星期一".nim_localized,
-                       @(3):@"星期二".nim_localized,
-                       @(4):@"星期三".nim_localized,
-                       @(5):@"星期四".nim_localized,
-                       @(6):@"星期五".nim_localized,
-                       @(7):@"星期六".nim_localized,};
+    daysOfWeekDict = @{@(1): [NIMUITextHelper UITextWithTimeAlertSunday],
+                       @(2): [NIMUITextHelper UITextWithTimeAlertMonday],
+                       @(3): [NIMUITextHelper UITextWithTimeAlertTuesday],
+                       @(4): [NIMUITextHelper UITextWithTimeAlertWednesday],
+                       @(5): [NIMUITextHelper UITextWithTimeAlertThursday],
+                       @(6): [NIMUITextHelper UITextWithTimeAlertFriday],
+                       @(7): [NIMUITextHelper UITextWithTimeAlertSaturday],};
     return [daysOfWeekDict objectForKey:@(dayOfWeek)];
 }
 
