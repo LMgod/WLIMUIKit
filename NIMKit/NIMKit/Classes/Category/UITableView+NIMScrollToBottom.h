@@ -11,4 +11,5 @@
 @interface UITableView (NIMKit)
 
 - (void)nim_scrollToBottom:(BOOL)animation;
+- (void)nim_DirctscrollToBottom;
 @end

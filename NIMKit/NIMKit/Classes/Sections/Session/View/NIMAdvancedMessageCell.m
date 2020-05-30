@@ -64,6 +64,7 @@ static const CGFloat kNIMAdvancedBackgroundPadding = 5;
         _pinView.titleLabel.minimumScaleFactor = 0.7;
         [self.contentView addSubview:_pinView];
         
+        
     }
     return self;
 }
@@ -86,6 +87,7 @@ static const CGFloat kNIMAdvancedBackgroundPadding = 5;
 
     [self layoutPinView];
     [self layoutReplyCountView];
+    self.backgroundColor = UIColor.clearColor;
 }
 
 #pragma mark - View

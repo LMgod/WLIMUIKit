@@ -28,9 +28,13 @@
 - (instancetype)initWithSession:(NIMSession *)session;
 - (id<NIMSessionConfig>)sessionConfig;
 - (void)sendMessage:(NIMMessage *)message;
+- (NSString *)sessionTitle;
 
 #pragma mark - 菜单
 - (NIMMessage *)messageForMenu;
+#pragma mark - NIMChatManagerDelegate
+//接收消息
+- (void)onRecvMessages:(NSArray *)messages;
 
 #pragma mark - 录音相关接口
 - (void)sendAudoMessageWithPath:(NSString *)filePath duration:(NSTimeInterval)duration;
@@ -47,11 +51,15 @@
 
 #pragma mark - cellHandle
 - (BOOL)onTapCell:(NIMKitEvent *)event;
+- (BOOL)onTapAvatar:(NIMMessage *)message;
 - (void)handleLongPressCell:(NIMMessage *)message
                      inView:(UIView *)view;
 
 
 - (void)copyText:(id)sender;
 - (void)deleteMsg:(id)sender;
+
+#pragma mark - input
+- (void)onTextChanged:(id)sender;
 
 @end

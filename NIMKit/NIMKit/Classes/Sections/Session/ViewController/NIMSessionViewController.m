@@ -55,7 +55,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.navigationItem.title = [self sessionTitle];
     //消息 tableView
     [self setupTableView];
     //输入框 inputView
@@ -74,7 +73,7 @@
 {
     self.view.backgroundColor = [UIColor whiteColor];
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
-    self.tableView.backgroundColor = NIMKit_UIColorFromRGB(0xe4e7ec);
+    self.tableView.backgroundColor = NIMKit_UIColorFromRGB(0xf5f5f5);
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.estimatedRowHeight = 0;
     self.tableView.estimatedSectionHeaderHeight = 0;

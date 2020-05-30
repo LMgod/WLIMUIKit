@@ -45,6 +45,7 @@
     [_timeLabel sizeToFit];
     _timeLabel.center = CGPointMake(self.nim_centerX, 20);
     _timeBGView.frame = CGRectMake(_timeLabel.nim_left - 7, _timeLabel.nim_top - 2, _timeLabel.nim_width + 14, _timeLabel.nim_height + 4);
+    self.backgroundColor = UIColor.clearColor;
 }
 
 

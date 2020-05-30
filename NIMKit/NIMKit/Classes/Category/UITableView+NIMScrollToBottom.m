@@ -22,5 +22,18 @@
     });
 }
 
+- (void)nim_DirctscrollToBottom
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+       NSInteger row = [self numberOfRowsInSection:0] - 1;
+        if (row > 0)
+        {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:0];
+            [self scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:NO];
+        }
+    });
+
+}
+
 
 @end
