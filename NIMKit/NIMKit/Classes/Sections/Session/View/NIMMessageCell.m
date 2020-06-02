@@ -515,6 +515,12 @@
     }
 }
 
+- (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param{
+    if ([self.delegate respondsToSelector:@selector(updateActionStarttruthForUserEnergyWithParam:)]) {
+        [self.delegate updateActionStarttruthForUserEnergyWithParam:param];
+    }
+}
+
 #pragma mark - Action
 - (void)onRetryMessage:(id)sender
 {

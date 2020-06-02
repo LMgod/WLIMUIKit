@@ -20,6 +20,7 @@ typedef NS_ENUM (NSInteger, NIMSessionMessageContentViewLayout){
 @protocol NIMMessageContentViewDelegate <NSObject>
 
 - (void)onCatchEvent:(NIMKitEvent *)event;
+- (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param;
 
 @end
 

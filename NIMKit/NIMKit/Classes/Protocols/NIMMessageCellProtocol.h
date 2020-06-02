@@ -45,5 +45,5 @@
 - (void)onClickEmoticon:(NIMMessage *)message
                 comment:(NIMQuickComment *)comment
                selected:(BOOL)isSelected;
-
+- (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param;
 @end
