@@ -521,6 +521,19 @@
     }
 }
 
+-(void)reportChatUser{
+    if ([self.delegate respondsToSelector:@selector(reportChatUser)]) {
+        [self.delegate reportChatUser];
+    }
+}
+
+- (void)translateTextSuccess{
+    if ([self.delegate respondsToSelector:@selector(translateTextSuccessWithMessage:)]) {
+        [self.delegate translateTextSuccessWithMessage:self.model.message];
+    }
+    
+}
+
 #pragma mark - Action
 - (void)onRetryMessage:(id)sender
 {

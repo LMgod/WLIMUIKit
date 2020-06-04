@@ -58,6 +58,9 @@
     {
         NSAssert(0, @"not support model");
     }
+    if ([self.delegate respondsToSelector:@selector(tableViewCell:forRowAtIndexPath:)]) {
+        [self.delegate tableViewCell:cell forRowAtIndexPath:indexPath];
+    }
     return cell;
 }
 

@@ -26,7 +26,6 @@
  */
 @property (nonatomic,readonly) NSTimeInterval messageTime;
 
-
 @property (nonatomic, readonly) UIEdgeInsets  contentViewInsets;
 
 @property (nonatomic, readonly) UIEdgeInsets  bubbleViewInsets;

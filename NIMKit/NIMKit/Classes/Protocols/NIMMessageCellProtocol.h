@@ -19,7 +19,7 @@
 @optional
 
 #pragma mark - cell 样式更改
-
+- (void)tableViewCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
 
 - (BOOL)disableAudioPlayedStatusIcon:(NIMMessage *)message;
@@ -46,4 +46,6 @@
                 comment:(NIMQuickComment *)comment
                selected:(BOOL)isSelected;
 - (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param;
+- (void)reportChatUser;
+- (void)translateTextSuccessWithMessage:(NIMMessage *)message;
 @end

@@ -21,6 +21,8 @@ typedef NS_ENUM (NSInteger, NIMSessionMessageContentViewLayout){
 
 - (void)onCatchEvent:(NIMKitEvent *)event;
 - (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param;
+- (void)reportChatUser;
+- (void)translateTextSuccess;
 
 @end
 
