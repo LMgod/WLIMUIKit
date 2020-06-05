@@ -48,4 +48,5 @@
 - (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param;
 - (void)reportChatUser;
 - (void)translateTextSuccessWithMessage:(NIMMessage *)message;
+- (void)reclickNetCallWithMessage:(NIMMessage *)message;
 @end

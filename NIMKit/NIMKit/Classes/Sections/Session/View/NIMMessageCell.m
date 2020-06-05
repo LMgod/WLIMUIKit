@@ -534,6 +534,12 @@
     
 }
 
+-(void)reclickNetCallWithMessage:(NIMMessage *)message{
+    if ([self.delegate respondsToSelector:@selector(reclickNetCallWithMessage:)]) {
+        [self.delegate reclickNetCallWithMessage:message];
+    }
+}
+
 #pragma mark - Action
 - (void)onRetryMessage:(id)sender
 {

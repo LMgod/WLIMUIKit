@@ -36,6 +36,12 @@
     [self updatePlaceholder];
 }
 
+- (void)setAttributedText:(NSAttributedString *)attributedText{
+    [super setAttributedText:attributedText];
+    [self updatePlaceholder];
+    
+}
+
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
     if(action ==@selector(copy:) ||

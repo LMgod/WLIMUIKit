@@ -23,6 +23,7 @@ typedef NS_ENUM (NSInteger, NIMSessionMessageContentViewLayout){
 - (void)updateActionStarttruthForUserEnergyWithParam:(NSDictionary *)param;
 - (void)reportChatUser;
 - (void)translateTextSuccess;
+- (void)reclickNetCallWithMessage:(NIMMessage *)message;
 
 @end
 

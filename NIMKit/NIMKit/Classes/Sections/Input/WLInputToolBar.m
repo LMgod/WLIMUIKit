@@ -26,6 +26,12 @@
 }
 
 - (void)initSubviews{
+    [self addSubview:self.inputTextView];
+    self.inputTextView.nim_left = 16 * NIMKit_ScaleX;
+    self.inputTextView.nim_width = self.nim_width - 32 * NIMKit_ScaleX;
+    self.inputTextView.nim_top = 5 * NIMKit_ScaleX;
+    self.inputTextView.nim_height = [NIMUIConfig inputTextViewHeight];
+    
     NSArray *imageArr = [self imageNameArray];
     [self insertSubview:self.btnContentView atIndex:0];
     [imageArr enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -45,7 +51,7 @@
         btn.nim_width = btnWidth;
         btn.nim_height = btnWidth;
         btn.nim_left = (leftMagin + itemWith * idx);
-        btn.nim_top = [NIMUIConfig inputTextViewHeight] + 5 * NIMKit_ScaleX;
+        btn.nim_top = CGRectGetMaxY(self.inputTextView.frame) + 5 * NIMKit_ScaleX;
         if (idx == 0) {
             self.btnContentView.nim_left = 0;
             self.btnContentView.nim_width = self.nim_width;
@@ -53,11 +59,7 @@
             self.btnContentView.nim_height = btn.nim_height;
         }
     }];
-    [self addSubview:self.inputTextView];
-    self.inputTextView.nim_left = 16 * NIMKit_ScaleX;
-    self.inputTextView.nim_width = self.nim_width - 32 * NIMKit_ScaleX;
-    self.inputTextView.nim_top = 5 * NIMKit_ScaleX;
-    self.inputTextView.nim_height = [NIMUIConfig inputTextViewHeight];
+    
     
 }
 
@@ -106,6 +108,9 @@
     //得到 ToolBar 自身高度
     inputHeight = MAX(inputHeight, [NIMUIConfig inputTextViewHeight]);
     viewHeight = viewHeight + inputHeight - [NIMUIConfig inputTextViewHeight];
+    [self.itemsArray enumerateObjectsUsingBlock:^(UIButton * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.nim_top = CGRectGetMaxY(self.inputTextView.frame) + 5 * NIMKit_ScaleX;
+    }];
     return CGSizeMake(size.width,viewHeight);
 }
 
@@ -148,20 +153,14 @@
     }
 }
 
-- (void)willChangeHeight:(CGFloat)height
-{
-//    CGFloat toolBarHeight = height + 2 * self.spacing;
-//    if ([self.delegate respondsToSelector:@selector(toolBarWillChangeHeight:)]) {
-//        [self.delegate toolBarWillChangeHeight:toolBarHeight];
-//    }
-}
+
 
 - (void)didChangeHeight:(CGFloat)height
 {
-//    self.nim_height = height + 2 * self.spacing + 2 * self.textViewPadding;
-//    if ([self.delegate respondsToSelector:@selector(toolBarDidChangeHeight:)]) {
-//        [self.delegate toolBarDidChangeHeight:self.nim_height];
-//    }
+    [self sizeToFit];
+    if ([self.delegate respondsToSelector:@selector(toolBarDidChangeHeight:)]) {
+        [self.delegate toolBarDidChangeHeight:height];
+    }
 }
 
 

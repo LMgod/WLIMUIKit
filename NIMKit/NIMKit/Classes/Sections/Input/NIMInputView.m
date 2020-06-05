@@ -78,6 +78,7 @@
         case NIMCustomInputTypeMore:
         {
             containerHeight = [NIMUIConfig bottomInputViewHeight];
+            
             break;
         }
         default:
@@ -95,6 +96,12 @@
         }
            break;
     }
+    
+    self.sendAudioContainerView.nim_top = toolBarHeight;
+    self.sendGiftContainerView.nim_top = toolBarHeight;
+    self.sendTruthContainerView.nim_top = toolBarHeight;
+    self.moreContainerView.nim_top = toolBarHeight;
+    
     CGFloat height = replyedContentHeight + toolBarHeight + containerHeight;
     CGFloat width = self.superview? self.superview.nim_width : self.nim_width;
     return CGSizeMake(width, height);
@@ -255,7 +262,7 @@
                 self.sendTruthContainerView.hidden = YES;
                 self.sendGiftContainerView.hidden = YES;
                 self.moreContainerView.hidden = YES;
-                [[DongtuStore sharedInstance] attachEmotionKeyboardToInput:_toolBar.inputTextView.textView];
+                [[DongtuStore sharedInstance] attachEmotionKeyboardToInput:self.toolBar.inputTextView.textView];
                 
                
             }
