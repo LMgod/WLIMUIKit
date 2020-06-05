@@ -284,7 +284,7 @@
                                            nick:nil
                                          option:option];
         info.showName = name?:userId;
-        info.avatarUrlString = userInfo.thumbAvatarUrl;
+        info.avatarUrlString = userInfo.avatarUrl;
         info.avatarImage = self.defaultUserAvatar;
     }
     return info;
