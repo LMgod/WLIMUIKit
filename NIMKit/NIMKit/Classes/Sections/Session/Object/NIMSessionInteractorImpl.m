@@ -677,6 +677,8 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
           
       }
     [rootVC hx_presentCustomCameraViewControllerWithManager:[self.class defaultPhotoManager] done:^(HXPhotoModel *model, HXCustomCameraViewController *viewController) {
+        
+        
         model.selectIndexStr = @"1";
         [@[model] hx_requestImageWithOriginal:YES completion:^(NSArray<UIImage *> * _Nullable imageArray, NSArray<HXPhotoModel *> * _Nullable errorArray) {
             [imageArray enumerateObjectsUsingBlock:^(UIImage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
