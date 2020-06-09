@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NIMUITextHelper : NSObject
 
+@property (nonatomic, copy, class) NSString *languageCode;
+
 /**
  想和Ta说点什么？
 */

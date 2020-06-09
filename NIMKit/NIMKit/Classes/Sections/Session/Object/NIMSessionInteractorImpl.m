@@ -905,7 +905,7 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
 + (HXPhotoManager *)defaultPhotoManager{
     HXPhotoManager *manager = [[HXPhotoManager alloc] initWithType:HXPhotoManagerSelectedTypePhoto];
     manager.configuration.openCamera = NO;//是否打开相机功能
-    manager.configuration.languageType = HXPhotoLanguageTypeSc;
+    manager.configuration.languageType = HXPhotoLanguageTypeEn;
     manager.configuration.lookLivePhoto = YES;//开启查看LivePhoto功能
     manager.configuration.lookGifPhoto = NO;
     manager.configuration.photoMaxNum = 9;//照片最大选择数
