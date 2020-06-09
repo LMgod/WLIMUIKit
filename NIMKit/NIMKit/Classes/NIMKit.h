@@ -88,6 +88,10 @@ FOUNDATION_EXPORT const unsigned char NIMKitVersionString[];
 @interface NIMKit : NSObject
 
 + (instancetype)sharedKit;
+/**
+ *  语言
+ */
+@property (nonatomic, copy) NSString *preferredLanguage;
 
 /**
  *  注册自定义的排版配置，通过注册自定义排版配置来实现自定义消息的定制化排版

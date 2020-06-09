@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSBundle (NIMKit)
 
+
+
 + (NSBundle *)nim_defaultResourceBundle;
 
 + (NSString *)nim_ResourceImage:(NSString *)imageName;

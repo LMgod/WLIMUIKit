@@ -91,14 +91,10 @@
 
 + (NSString *)preferredLanguage
 {
-    NSString * preferredLanguage = [NSLocale preferredLanguages].firstObject;
-    
-    if ([preferredLanguage rangeOfString:@"zh-Hans"].location != NSNotFound) {
-        preferredLanguage = @"zh";
-    } else {
-        preferredLanguage = @"en";
+    NSString * preferredLanguage = @"en";
+    if ([NIMKit sharedKit].preferredLanguage) {
+        preferredLanguage = [NIMKit sharedKit].preferredLanguage;
     }
-    
     return preferredLanguage;
 }
 

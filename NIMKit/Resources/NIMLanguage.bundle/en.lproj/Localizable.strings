@@ -120,7 +120,7 @@
 "转让群" = "Transfer group to";
 "转让群并退出" = "Transfer group and exit";
 "请操作" = "Please operate";
-"拍照" = "take a picture";
+"拍照" = "Take photo";
 "从相册" = "From album";
 "设置群头像" = "Set group avatar";
 "修改群名称" = "Modify group name";
@@ -374,4 +374,9 @@
 "操作失败" = "Failed";
 "评论成功" = "Added";
 
+
+"想和Ta说点什么？" = "Say something";
+"照片" = "photo";
+"按住说话" = "Hold and talk";
+"说话时间太短!!!" = "Record time is too shot!!!";
 
