@@ -61,6 +61,7 @@ typedef NS_ENUM(NSInteger, NIMCustomInputType) {
                        config:(id<NIMSessionConfig>)config;
 
 - (void)reset;
+- (void)hideBottomContainerViews;
 - (void)setInputDelegate:(id<NIMInputDelegate>)delegate;
 
 //外部设置

@@ -764,7 +764,9 @@
 
 - (void)onTapTableView:(id)sender
 {
-    [self.sessionInputView reset];
+    [self.sessionInputView endEditing:YES];
+    [self.sessionInputView hideBottomContainerViews];
+    
 }
 
 #pragma mark - 旋转处理 (iOS8 or above)
